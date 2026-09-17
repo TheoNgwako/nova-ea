@@ -28,6 +28,7 @@ export default function MentorLayout({ children }: { children: React.ReactNode }
     { name: 'Dashboard', path: '/mentor', icon: '📊' },
     { name: 'Generate Key', path: '/mentor/generate-key', icon: '🔑' },
     { name: 'Manage EAs', path: '/mentor/manage-eas', icon: '📋' },
+    { name: 'Upload Media', path: '/mentor/upload-media', icon: '📤' },
     { name: 'Key Stats', path: '/mentor/key-stats', icon: '📈' },
     { name: 'Copy Trading', path: '/mentor/copy-trading', icon: '🔄' },
     { name: 'Wallet', path: '/mentor/wallet', icon: '💰' },

@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
 import { auth } from '../lib/firebase';
 
 export default function Login() {
@@ -13,23 +13,39 @@ export default function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // Check if already logged in
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        console.log('Already logged in:', user.email);
+        router.push('/mentor');
+      }
+    });
+    return () => unsubscribe();
+  }, [router]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
+    console.log('Login attempt:', email);
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      console.log('Login success:', userCredential.user.email);
       router.push('/mentor');
     } catch (err: any) {
+      console.error('Login error:', err.code, err.message);
       if (err.code === 'auth/user-not-found') {
         setError('No account found with this email');
       } else if (err.code === 'auth/wrong-password') {
         setError('Incorrect password');
       } else if (err.code === 'auth/invalid-email') {
         setError('Invalid email address');
+      } else if (err.code === 'auth/invalid-credential') {
+        setError('Invalid email or password');
       } else {
-        setError('Login failed. Please try again.');
+        setError('Login failed: ' + err.message);
       }
     } finally {
       setLoading(false);

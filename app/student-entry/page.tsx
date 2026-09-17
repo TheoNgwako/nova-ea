@@ -28,6 +28,7 @@ export default function StudentEntry() {
     setError('');
     setLoading(true);
 
+    // FOR DEMO: Skip payment check, go straight to key step
     setTimeout(() => {
       setLoading(false);
       setStep('key');
@@ -39,7 +40,25 @@ export default function StudentEntry() {
     setError('');
     setLoading(true);
 
-    setTimeout(() => {
+    try {
+      const res = await fetch('/api/keys/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          mentorId,
+          key: studentKey,
+          email,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!data.success) {
+        setError(data.error || 'Invalid key. Please check with your mentor.');
+        setLoading(false);
+        return;
+      }
+
       localStorage.setItem('student_demo', JSON.stringify({
         email,
         mentorId,
@@ -51,7 +70,10 @@ export default function StudentEntry() {
       
       setLoading(false);
       router.push('/student');
-    }, 800);
+    } catch (err) {
+      setError('Something went wrong. Please try again.');
+      setLoading(false);
+    }
   };
 
   return (
