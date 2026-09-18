@@ -22,9 +22,16 @@ export default function RobotTerminal({ logs, isActive }: RobotTerminalProps) {
   // Queue new logs
   useEffect(() => {
     if (logs.length > 0) {
-      setQueue(prev => [...prev, logs[0]]);
+      const latestLog = logs[0];
+      // Make sure we don't queue the same log twice
+      setQueue(prev => {
+        const exists = prev.some(l => l.id === latestLog.id);
+        const alreadyDisplayed = displayedLogs.some(l => l.id === latestLog.id);
+        if (exists || alreadyDisplayed) return prev;
+        return [...prev, latestLog];
+      });
     }
-  }, [logs]);
+  }, [logs, displayedLogs]);
 
   // Typewriter effect
   useEffect(() => {

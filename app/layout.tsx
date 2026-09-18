@@ -31,6 +31,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <link
+          href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Audiowide&family=Russo+One&family=Bungee&family=Black+Ops+One&family=Monoton&family=Rubik+Glitch&family=Alex+Brush&family=Righteous&family=Bebas+Neue&family=Teko:wght@700&family=Saira+Stencil+One&family=Michroma&family=Bruno+Ace&family=Syncopate:wght@700&family=Iceberg&family=Wallpoet&family=Megrim&display=swap"
+          rel="stylesheet"
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

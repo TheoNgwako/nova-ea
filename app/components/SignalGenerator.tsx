@@ -1,65 +1,109 @@
 'use client';
 
-import { useEffect } from 'react';
-
-type Signal = {
-  type: 'BUY' | 'SELL';
-  symbol: string;
-  volume: string;
-  entry: string;
-  tp: string;
-  sl: string;
-};
+import { useEffect, useRef } from 'react';
+import { PAIRS, getCandles, getLivePrice } from '../lib/marketData';
+import { generateSignal, Signal } from '../lib/strategy';
 
 type SignalGeneratorProps = {
   isActive: boolean;
-  onSignal: (signal: Signal) => void;
+  onSignal: (signal: {
+    type: 'BUY' | 'SELL';
+    symbol: string;
+    volume: string;
+    entry: string;
+    tp: string;
+    sl: string;
+  }) => void;
 };
 
 export default function SignalGenerator({ isActive, onSignal }: SignalGeneratorProps) {
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const lastSignalsRef = useRef<Record<string, number>>({});
+  const activePairsRef = useRef<string[]>(['XAU/USD', 'EUR/USD', 'GBP/USD', 'BTC/USD']);
+
   useEffect(() => {
-    if (!isActive) return;
+    if (!isActive) {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      return;
+    }
 
-    const pairs = [
-      { symbol: 'XAUUSD', basePrice: 4288.4, volatility: 5, decimals: 1 },
-      { symbol: 'EURUSD', basePrice: 1.0842, volatility: 0.005, decimals: 4 },
-      { symbol: 'GBPUSD', basePrice: 1.2648, volatility: 0.008, decimals: 4 },
-      { symbol: 'BTCUSD', basePrice: 62500, volatility: 500, decimals: 1 },
-      { symbol: 'NAS100', basePrice: 18450, volatility: 50, decimals: 1 },
-      { symbol: 'US30', basePrice: 38200, volatility: 100, decimals: 1 },
-    ];
+    console.log('🚀 Signal Generator started');
 
-    const generateSignal = () => {
-      const pair = pairs[Math.floor(Math.random() * pairs.length)];
-      const type: 'BUY' | 'SELL' = Math.random() > 0.5 ? 'BUY' : 'SELL';
+    const scanMarkets = async () => {
+      console.log('🔍 Scanning markets...');
 
-      const fluctuation = (Math.random() - 0.5) * pair.volatility;
-      const entry = pair.basePrice + fluctuation;
+      // Only scan selected pairs
+      const pairsToScan = PAIRS.filter(p => activePairsRef.current.includes(p.symbol));
 
-      const slDistance = pair.volatility * 2;
-      const tpDistance = pair.volatility * 3;
+      for (const pair of pairsToScan) {
+        try {
+          // Get candles for analysis
+          const candles = await getCandles(pair.symbol, '5min', 200);
 
-      const sl = type === 'BUY' ? entry - slDistance : entry + slDistance;
-      const tp = type === 'BUY' ? entry + tpDistance : entry - tpDistance;
+          if (candles.length < 200) {
+            console.log(`⏳ ${pair.label}: Not enough data (${candles.length}/200)`);
+            continue;
+          }
 
-      const signal: Signal = {
-        type,
-        symbol: pair.symbol,
-        volume: '0.01',
-        entry: entry.toFixed(pair.decimals),
-        tp: tp.toFixed(pair.decimals),
-        sl: sl.toFixed(pair.decimals),
-      };
+          // Generate signal
+          const signal: Signal | null = generateSignal(
+            candles,
+            pair.symbol,
+            pair.label,
+            pair.decimals
+          );
 
-      onSignal(signal);
+          if (!signal) continue;
+
+          console.log(`📊 ${pair.label}: ${signal.action} (RSI: ${signal.indicators.rsi}, Confidence: ${signal.confidence}%)`);
+
+          // Only send BUY/SELL signals
+          if (signal.action !== 'WAIT' && signal.confidence >= 60) {
+            // Cooldown - 5 minutes per pair
+            const now = Date.now();
+            const lastSignalTime = lastSignalsRef.current[pair.symbol] || 0;
+            const cooldownMs = 5 * 60 * 1000;
+
+            if (now - lastSignalTime < cooldownMs) {
+              console.log(`⏸️ ${pair.label}: Cooldown active`);
+              continue;
+            }
+
+            lastSignalsRef.current[pair.symbol] = now;
+
+            // Send signal
+            onSignal({
+              type: signal.action as 'BUY' | 'SELL',
+              symbol: signal.label,
+              volume: '0.01',
+              entry: signal.entry,
+              tp: signal.tp,
+              sl: signal.sl,
+            });
+
+            console.log(`✅ SIGNAL SENT: ${signal.action} ${pair.label} @ ${signal.entry}`);
+          }
+        } catch (error) {
+          console.error(`Error scanning ${pair.label}:`, error);
+        }
+
+        // Small delay between pairs to avoid rate limits
+        await new Promise(resolve => setTimeout(resolve, 3000));
+      }
     };
 
-    const initialTimeout = setTimeout(generateSignal, 5000);
-    const interval = setInterval(generateSignal, 20000);
+    // First scan after 5 seconds
+    const initialTimeout = setTimeout(scanMarkets, 5000);
+
+    // Then scan every 60 seconds
+    intervalRef.current = setInterval(scanMarkets, 60000);
 
     return () => {
-      clearTimeout(initialTimeout);
-      clearInterval(interval);
+      if (initialTimeout) clearTimeout(initialTimeout);
+      if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, [isActive, onSignal]);
 

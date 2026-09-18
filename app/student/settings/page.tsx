@@ -12,52 +12,43 @@ export default function StudentSettings() {
   const [email, setEmail] = useState('');
 
   useEffect(() => {
+    // Check localStorage first (student session)
+    const isLoggedIn = localStorage.getItem('student_logged_in');
+    const studentData = JSON.parse(localStorage.getItem('student_demo') || '{}');
+
+    if (isLoggedIn === 'true' && studentData.email) {
+      setEmail(studentData.email);
+      setLoading(false);
+      return;
+    }
+
+    // Fallback to Firebase auth
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (!user) {
-        const isPWA = window.matchMedia('(display-mode: standalone)').matches;
-        if (isPWA) {
-          // In PWA mode, just stay here
-          setLoading(false);
-        } else {
-          router.push('/student-entry');
-        }
-      } else {
+      if (user) {
         setEmail(user.email || '');
         setLoading(false);
+      } else {
+        window.location.href = '/student-entry';
       }
     });
     return () => unsubscribe();
-  }, [router]);
+  }, []);
 
   const handleLogout = async () => {
     setLoading(true);
-    await signOut(auth);
-    
+
+    // Clear student session
     localStorage.removeItem('student_logged_in');
     localStorage.removeItem('student_demo');
-    
-    const isPWA = window.matchMedia('(display-mode: standalone)').matches;
-    
-    if (isPWA) {
-      // Try to close the app
-      window.close();
-      // Fallback
-      setTimeout(() => {
-        document.body.innerHTML = `
-          <div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#000;color:#fff;font-family:sans-serif;">
-            <div style="text-align:center;">
-              <h2 style="color:#ff1a1a;">Logged Out</h2>
-              <p style="color:#666;margin-top:10px;">Tap the home button to exit</p>
-              <button onclick="window.location.reload()" style="margin-top:20px;padding:12px 30px;background:#ff1a1a;color:#fff;border:none;border-radius:10px;font-size:16px;cursor:pointer;">
-                Restart App
-              </button>
-            </div>
-          </div>
-        `;
-      }, 300);
-    } else {
-      router.push('/student-entry');
-    }
+    localStorage.removeItem('fcm_token');
+
+    // Also sign out from Firebase if logged in
+    try {
+      await signOut(auth);
+    } catch (e) {}
+
+    // Hard redirect to entry page
+    window.location.href = '/student-entry';
   };
 
   if (loading) {

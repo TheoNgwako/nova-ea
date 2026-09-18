@@ -13,19 +13,12 @@ export default function StudentLayout({
   const [allowed, setAllowed] = useState(false);
 
   useEffect(() => {
-    // Check if student is logged in (demo mode)
     const isLoggedIn = localStorage.getItem('student_logged_in');
     const studentDemo = localStorage.getItem('student_demo');
-
-    console.log('🔒 Layout check:');
-    console.log('  logged_in:', isLoggedIn);
-    console.log('  demo:', studentDemo);
 
     if (isLoggedIn === 'true' && studentDemo) {
       setAllowed(true);
     } else {
-      console.log('❌ Not logged in — redirecting');
-      // Use window.location for hard redirect
       window.location.href = '/student-entry';
       return;
     }

@@ -2,8 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from '../lib/firebase';
 
 export default function StudentEntry() {
   const router = useRouter();
@@ -15,20 +13,18 @@ export default function StudentEntry() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        router.push('/student');
-      }
-    });
-    return () => unsubscribe();
-  }, [router]);
+    // If already logged in as student, go straight to dashboard
+    const isLoggedIn = localStorage.getItem('student_logged_in');
+    if (isLoggedIn === 'true') {
+      window.location.href = '/student';
+    }
+  }, []);
 
   const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
-    // FOR DEMO: Skip payment check, go straight to key step
     setTimeout(() => {
       setLoading(false);
       setStep('key');
@@ -44,17 +40,13 @@ export default function StudentEntry() {
       const res = await fetch('/api/keys/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          mentorId,
-          key: studentKey,
-          email,
-        }),
+        body: JSON.stringify({ mentorId, key: studentKey, email }),
       });
 
       const data = await res.json();
 
       if (!data.success) {
-        setError(data.error || 'Invalid key. Please check with your mentor.');
+        setError(data.error || 'Invalid key');
         setLoading(false);
         return;
       }
@@ -65,13 +57,12 @@ export default function StudentEntry() {
         studentKey,
         enteredAt: new Date().toISOString()
       }));
-      
       localStorage.setItem('student_logged_in', 'true');
-      
+
       setLoading(false);
-      router.push('/student');
+      window.location.href = '/student';
     } catch (err) {
-      setError('Something went wrong. Please try again.');
+      setError('Something went wrong');
       setLoading(false);
     }
   };
