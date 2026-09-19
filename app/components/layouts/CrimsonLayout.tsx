@@ -2,7 +2,7 @@
 
 import { useTheme } from '../../context/ThemeContext';
 
-type PhoenixLayoutProps = {
+type CrimsonLayoutProps = {
   mentorImage: string | null;
   mentorName: string;
   mentorTagline: string;
@@ -14,7 +14,7 @@ type PhoenixLayoutProps = {
   getFontFamily: () => string;
 };
 
-export default function PhoenixLayout({
+export default function CrimsonLayout({
   mentorImage,
   mentorName,
   mentorTagline,
@@ -22,60 +22,56 @@ export default function PhoenixLayout({
   onToggle,
   onRemove,
   getFontFamily,
-}: PhoenixLayoutProps) {
+}: CrimsonLayoutProps) {
   const { accentColor } = useTheme();
 
   return (
     <>
       <p
-        className="text-center text-base font-black tracking-widest mb-2 uppercase"
+        className="text-center text-base font-black tracking-widest mb-4 uppercase"
         style={{ color: accentColor, textShadow: `0 0 20px ${accentColor}80` }}
       >
         THE GREAT SON OF NAS
       </p>
 
-      {/* Big Circle */}
+      {/* Double Outline Circle */}
       <div className="flex justify-center mb-4">
         <div className="relative">
           <div
-            className="w-56 h-56 rounded-full overflow-hidden"
+            className="w-52 h-52 rounded-full"
             style={{
-              border: `3px solid ${accentColor}`,
-              boxShadow: `0 0 30px ${accentColor}80, 0 0 60px ${accentColor}40, inset 0 0 30px ${accentColor}30`,
+              border: `2px solid ${accentColor}40`,
+              boxShadow: `0 0 40px ${accentColor}30`,
             }}
-          >
+          />
+          <div
+            className="absolute inset-2 rounded-full"
+            style={{
+              border: `2px solid ${accentColor}`,
+              boxShadow: `0 0 30px ${accentColor}80, inset 0 0 30px ${accentColor}40`,
+            }}
+          />
+          <div className="absolute inset-4 rounded-full overflow-hidden">
             {mentorImage ? (
               <img src={mentorImage} alt="AI" className="w-full h-full object-cover" />
             ) : (
               <div
-                className="w-full h-full bg-gradient-to-br from-red-900/40 to-black flex items-center justify-center text-6xl font-black"
+                className="w-full h-full bg-gradient-to-br from-red-900/40 to-black flex items-center justify-center text-4xl font-black"
                 style={{ color: accentColor }}
               >
                 AI
               </div>
             )}
           </div>
-
-          <div
-            className="absolute -bottom-2 -left-2 w-16 h-16 rounded-full overflow-hidden"
-            style={{ border: `2px solid ${accentColor}`, boxShadow: `0 0 15px ${accentColor}` }}
-          >
-            {mentorImage ? (
-              <img src={mentorImage} alt="Avatar" className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full bg-black" />
-            )}
-          </div>
-
-          <div className="absolute bottom-2 left-14 w-3 h-3 bg-green-500 rounded-full border-2 border-black" />
+          <div className="absolute bottom-2 right-4 w-3 h-3 bg-green-500 rounded-full border-2 border-black" />
         </div>
       </div>
 
-      <p className="text-center text-xs tracking-widest text-white mt-4">
+      <p className="text-center text-xs tracking-widest text-white mb-1">
         Your Trading With
       </p>
       <h1
-        className="text-center text-4xl font-black tracking-wider mb-4"
+        className="text-center text-3xl font-black tracking-wide mb-5"
         style={{
           fontFamily: getFontFamily(),
           color: accentColor,
@@ -85,32 +81,20 @@ export default function PhoenixLayout({
         {mentorName.toUpperCase()}
       </h1>
 
-      <div className="flex justify-center mb-6">
-        <div
-          className="px-5 py-2 rounded-full text-xs"
-          style={{ border: `1px solid ${accentColor}60`, background: `${accentColor}10` }}
-        >
-          <span className="text-white">Powered By</span>{' '}
-          <span className="text-white">NOVA EA</span>
-        </div>
-      </div>
-
-      {/* 3 Buttons */}
-      <div className="flex items-center justify-center gap-6 mb-6">
+      {/* Circular Controls Row */}
+      <div className="flex items-center justify-center gap-5 mb-5">
         <button
           onClick={onRemove}
-          className="w-16 h-16 rounded-full flex flex-col items-center justify-center text-xs font-bold transition active:scale-95"
+          className="w-14 h-14 rounded-full flex items-center justify-center transition active:scale-95"
           style={{
-            border: `1.5px solid ${accentColor}60`,
+            border: `2px solid ${accentColor}60`,
             background: 'rgba(0,0,0,0.6)',
-            color: accentColor,
             boxShadow: `0 0 15px ${accentColor}40`,
           }}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={accentColor} strokeWidth="2">
             <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          <span className="text-[9px] mt-0.5">REMOVE</span>
         </button>
 
         <button
@@ -119,7 +103,6 @@ export default function PhoenixLayout({
           style={{
             border: `2px solid ${accentColor}`,
             background: 'rgba(0,0,0,0.8)',
-            color: accentColor,
             boxShadow: `0 0 30px ${accentColor}, inset 0 0 20px ${accentColor}30`,
           }}
         >
@@ -133,15 +116,16 @@ export default function PhoenixLayout({
               <path d="M6 4l14 8-14 8V4z" />
             </svg>
           )}
-          <span className="text-[10px] mt-1 font-bold">{isStarted ? 'STOP' : 'START'}</span>
+          <span className="text-[10px] mt-1 font-bold" style={{ color: accentColor }}>
+            {isStarted ? 'STOP' : 'START'}
+          </span>
         </button>
 
         <button
-          className="w-16 h-16 rounded-full flex flex-col items-center justify-center text-xs font-bold transition active:scale-95"
+          className="w-14 h-14 rounded-full flex items-center justify-center transition active:scale-95"
           style={{
-            border: `1.5px solid ${accentColor}60`,
+            border: `2px solid ${accentColor}60`,
             background: 'rgba(0,0,0,0.6)',
-            color: accentColor,
             boxShadow: `0 0 15px ${accentColor}40`,
           }}
         >
@@ -149,40 +133,65 @@ export default function PhoenixLayout({
             <path d="M3 17l6-6 4 4 8-8" strokeLinecap="round" strokeLinejoin="round" />
             <path d="M14 7h7v7" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-          <span className="text-[9px] mt-0.5">QUOTES</span>
         </button>
+      </div>
+
+      {/* Powered By */}
+      <div className="flex justify-center mb-4">
+        <div
+          className="px-4 py-1.5 rounded-full text-[10px]"
+          style={{ border: `1px solid ${accentColor}60`, background: `${accentColor}10` }}
+        >
+          <span className="text-white">Powered By</span>{' '}
+          <span className="text-white">NOVA EA</span>
+        </div>
       </div>
 
       {/* Robot Card */}
       <div
-        className="rounded-2xl p-3 mb-4"
+        className="rounded-xl p-3 mb-4"
         style={{
           background: 'rgba(0,0,0,0.7)',
           border: `1px solid ${accentColor}40`,
-          boxShadow: `0 0 20px ${accentColor}30`,
         }}
       >
         <div className="flex items-center gap-3">
           <div
-            className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0"
-            style={{ border: `2px solid ${accentColor}`, boxShadow: `0 0 10px ${accentColor}` }}
+            className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0"
+            style={{ border: `2px solid ${accentColor}` }}
           >
             {mentorImage ? (
               <img src={mentorImage} alt="Robot" className="w-full h-full object-cover" />
             ) : (
-              <div className="w-full h-full bg-black flex items-center justify-center text-sm font-bold" style={{ color: accentColor }}>AI</div>
+              <div className="w-full h-full bg-black" />
             )}
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="text-sm font-bold text-white truncate">{mentorName}</h2>
+            <h2 className="text-xs font-bold text-white truncate">{mentorName}</h2>
             <p className="text-[10px] text-white/70 truncate">{mentorTagline}</p>
           </div>
           <span
-            className="text-[10px] px-2 py-1 rounded-full"
+            className="text-[9px] px-2 py-1 rounded-full"
             style={{ background: `${accentColor}20`, color: accentColor, border: `1px solid ${accentColor}40` }}
           >
-            {isStarted ? 'CONNECTED' : 'DISCONNECTED'}
+            {isStarted ? 'LIVE' : 'IDLE'}
           </span>
+        </div>
+      </div>
+
+      {/* Balance / Equity / Profit */}
+      <div className="grid grid-cols-3 gap-2">
+        <div className="rounded-lg p-2 text-center" style={{ background: 'rgba(0,0,0,0.7)', border: `1px solid ${accentColor}30` }}>
+          <p className="text-[9px] text-white">BALANCE</p>
+          <p className="text-sm font-bold text-white">10133</p>
+        </div>
+        <div className="rounded-lg p-2 text-center" style={{ background: 'rgba(0,0,0,0.7)', border: `1px solid ${accentColor}30` }}>
+          <p className="text-[9px] text-white">EQUITY</p>
+          <p className="text-sm font-bold text-white">10134</p>
+        </div>
+        <div className="rounded-lg p-2 text-center" style={{ background: 'rgba(0,0,0,0.7)', border: `1px solid ${accentColor}30` }}>
+          <p className="text-[9px] text-white">PROFIT</p>
+          <p className="text-sm font-bold text-green-500">+1.31</p>
         </div>
       </div>
     </>

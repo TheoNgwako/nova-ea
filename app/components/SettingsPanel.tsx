@@ -71,13 +71,8 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
 
   return (
     <>
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-black/80 z-[100]"
-        onClick={onClose}
-      />
+      <div className="fixed inset-0 bg-black/80 z-[100]" onClick={onClose} />
 
-      {/* Panel */}
       <div
         className="fixed top-0 right-0 h-full w-full max-w-md z-[101] overflow-y-auto"
         style={{
@@ -143,7 +138,7 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                       >
                         {l.name}
                       </p>
-                      <p className="text-white/40 text-xs mt-0.5">{l.desc}</p>
+                      <p className="text-white/60 text-xs mt-0.5">{l.desc}</p>
                     </div>
                     {layout === l.id && (
                       <div
@@ -186,7 +181,7 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                   >
                     {s.name}
                   </p>
-                  <p className="text-white/40 text-xs mt-0.5">{s.desc}</p>
+                  <p className="text-white/60 text-xs mt-0.5">{s.desc}</p>
                 </button>
               ))}
             </div>
@@ -233,22 +228,9 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                   >
                     {f.name}
                   </p>
-                  <p className="text-white/40 text-xs mt-0.5">EA Name Font Style</p>
+                  <p className="text-white/60 text-xs mt-0.5">EA Name Font Style</p>
                 </button>
               ))}
-            </div>
-          </Section>
-
-          {/* EA Manipulation */}
-          <Section
-            title="EA Manipulation"
-            icon="⚙"
-            isOpen={openSection === 'ea'}
-            onToggle={() => toggleSection('ea')}
-            accentColor={accentColor}
-          >
-            <div className="pt-3 text-white/50 text-sm">
-              EA manipulation settings coming soon.
             </div>
           </Section>
 
@@ -261,7 +243,7 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
               <span style={{ color: accentColor }} className="text-lg">▤</span>
               <span className="text-white font-semibold text-sm">Chart Scanner</span>
             </div>
-            <span className="text-white/40">›</span>
+            <span className="text-white/60">›</span>
           </button>
 
           {/* Back Animation */}
@@ -272,21 +254,21 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
             onToggle={() => toggleSection('back')}
             accentColor={accentColor}
           >
-            <div className="pt-3 text-white/50 text-sm">
+            <div className="pt-3 text-white/60 text-sm">
               Background animations coming soon.
             </div>
           </Section>
 
-          {/* Bottom Navigator */}
+          {/* Music */}
           <Section
-            title="Bottom Navigator"
-            icon="▥"
-            isOpen={openSection === 'nav'}
-            onToggle={() => toggleSection('nav')}
+            title="Music"
+            icon="♫"
+            isOpen={openSection === 'music'}
+            onToggle={() => toggleSection('music')}
             accentColor={accentColor}
           >
-            <div className="pt-3 text-white/50 text-sm">
-              Navigator customization coming soon.
+            <div className="pt-3 text-white/60 text-sm">
+              Music coming soon.
             </div>
           </Section>
 
@@ -299,7 +281,7 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
               <span className="text-lg" style={{ color: accentColor }}>◉</span>
               <div>
                 <p className="text-white font-semibold text-sm">Push Notifications</p>
-                <p className="text-white/40 text-xs">Alerts on for signals & execution</p>
+                <p className="text-white/60 text-xs">Alerts on for signals & execution</p>
               </div>
             </div>
             <div
@@ -344,7 +326,6 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
   );
 }
 
-// ===== Section Component =====
 function Section({
   title,
   icon,
@@ -377,7 +358,7 @@ function Section({
           <span className="text-white font-semibold text-sm">{title}</span>
         </div>
         <span
-          className="text-white/40 transition-transform"
+          className="text-white/60 transition-transform"
           style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
         >
           ▼

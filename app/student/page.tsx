@@ -13,8 +13,14 @@ import SmartScreen from '../components/SmartScreen';
 import PhoenixLayout from '../components/layouts/PhoenixLayout';
 import NovaLayout from '../components/layouts/NovaLayout';
 import InfernoLayout from '../components/layouts/InfernoLayout';
+import DefaultLayout from '../components/layouts/DefaultLayout';
+import MatrixLayout from '../components/layouts/MatrixLayout';
+import CrimsonLayout from '../components/layouts/CrimsonLayout';
+import NewSchoolLayout from '../components/layouts/NewSchoolLayout';
+import PhantomLayout from '../components/layouts/PhantomLayout';
+import NavigatorLayout from '../components/layouts/NavigatorLayout';
+import SniperLayout from '../components/layouts/SniperLayout';
 
-// ===== SVG Icons =====
 const SmartIcon = ({ color }: { color: string }) => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2">
     <path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z" strokeLinecap="round" strokeLinejoin="round" />
@@ -56,7 +62,7 @@ const BellIcon = ({ color }: { color: string }) => (
 
 export default function StudentDashboard() {
   const { accentColor, font, layout } = useTheme();
-  const { isStarted, isConnected, terminalLogs, tradeCount, startRobot, stopRobot, clearLogs, addLog } = useSignal();
+  const { isStarted, isConnected, terminalLogs, tradeCount, startRobot, stopRobot, clearLogs } = useSignal();
 
   const [balance, setBalance] = useState('10133.10');
   const [equity, setEquity] = useState('10134.41');
@@ -157,10 +163,47 @@ export default function StudentDashboard() {
     alert('Terminal cleared & robot reset');
   };
 
+  const renderLayout = () => {
+    const props = {
+      mentorImage,
+      mentorName,
+      mentorTagline,
+      isStarted,
+      isConnected,
+      terminalLogs,
+      onToggle: handleToggle,
+      onRemove: handleRemove,
+      getFontFamily,
+    };
+
+    switch (layout) {
+      case 'default': return <DefaultLayout {...props} />;
+      case 'matrix': return <MatrixLayout {...props} />;
+      case 'crimson': return <CrimsonLayout {...props} />;
+      case 'newschool': return <NewSchoolLayout {...props} />;
+      case 'phantom': return <PhantomLayout {...props} />;
+      case 'navigator': return <NavigatorLayout {...props} />;
+      case 'sniper': return <SniperLayout {...props} />;
+      case 'nova': return <NovaLayout {...props} />;
+      case 'inferno': return <InfernoLayout {...props} />;
+      case 'phoenix':
+      default:
+        return <PhoenixLayout {...props} />;
+    }
+  };
+
   return (
     <div className="min-h-screen text-white relative">
       {mentorVideo ? (
-        <video autoPlay loop muted playsInline className="fixed inset-0 w-full h-full object-cover z-0" src={mentorVideo} />
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="auto"
+          className="fixed inset-0 w-full h-full object-cover z-0"
+          src={mentorVideo}
+        />
       ) : mentorImage ? (
         <div className="fixed inset-0 z-0 bg-cover bg-center" style={{ backgroundImage: `url(${mentorImage})` }} />
       ) : (
@@ -183,43 +226,7 @@ export default function StudentDashboard() {
         </header>
 
         <div className="pt-20 pb-32 px-4 max-w-md mx-auto">
-          {layout === 'nova' ? (
-            <NovaLayout
-              mentorImage={mentorImage}
-              mentorName={mentorName}
-              mentorTagline={mentorTagline}
-              isStarted={isStarted}
-              isConnected={isConnected}
-              terminalLogs={terminalLogs}
-              onToggle={handleToggle}
-              onRemove={handleRemove}
-              getFontFamily={getFontFamily}
-            />
-          ) : layout === 'inferno' ? (
-            <InfernoLayout
-              mentorImage={mentorImage}
-              mentorName={mentorName}
-              mentorTagline={mentorTagline}
-              isStarted={isStarted}
-              isConnected={isConnected}
-              terminalLogs={terminalLogs}
-              onToggle={handleToggle}
-              onRemove={handleRemove}
-              getFontFamily={getFontFamily}
-            />
-          ) : (
-            <PhoenixLayout
-              mentorImage={mentorImage}
-              mentorName={mentorName}
-              mentorTagline={mentorTagline}
-              isStarted={isStarted}
-              isConnected={isConnected}
-              terminalLogs={terminalLogs}
-              onToggle={handleToggle}
-              onRemove={handleRemove}
-              getFontFamily={getFontFamily}
-            />
-          )}
+          {renderLayout()}
 
           {notifStatus !== 'granted' && notifStatus !== 'unsupported' && (
             <div className="mt-6">
