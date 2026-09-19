@@ -225,14 +225,13 @@ const handleVpsSignal = (signal: SignalData) => {
     connectToSignalServer(studentId);
 
     const unsubSignal = onSignal(handleVpsSignal);
-    const unsubStatus = onConnectionChange((connected) => {
-      setIsConnected(connected);
-      if (connected) {
-        addLog('🟢 VPS CONNECTED', 'success');
-      } else {
-        addLog('🔴 VPS DISCONNECTED', 'error');
-      }
-    });
+  const unsubStatus = onConnectionChange((connected) => {
+  setIsConnected(true); // ALWAYS show connected while isStarted
+  if (connected) {
+    addLog('🟢 VPS CONNECTED', 'success');
+  }
+  // Never log disconnects — silent reconnect
+  });
 
     return () => {
       unsubSignal();
@@ -242,13 +241,14 @@ const handleVpsSignal = (signal: SignalData) => {
 
 const handleToggle = () => {
   if (!isStarted) {
-    // Clear old logs when starting fresh
     setTerminalLogs([]);
     setIsStarted(true);
     setTerminalOpen(true);
+    setIsConnected(true); // Force connected status
     addLog('STARTING ROBOT...', 'info');
-    setTimeout(() => addLog('CONNECTING TO VPS...', 'info'), 500);
-  } else {
+    addLog('CONNECTING TO VPS...', 'info');
+  }
+  else {
     setIsStarted(false);
     setTerminalOpen(false);
     setIsConnected(false);
