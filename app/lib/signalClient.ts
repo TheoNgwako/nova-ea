@@ -1,6 +1,6 @@
 // NOVA EA - Signal Client (FIXED VERSION)
 
-const VPS_WS_URL = 'ws://139.84.247.129:8080';
+const VPS_WS_URL = 'wss://signals.novamobiles.co.za';
 
 export type SignalData = {
   id: string;

@@ -82,7 +82,7 @@ const studentId = studentData.email || 'unknown';
 
 // Send token to VPS
 try {
-  const res = await fetch('http://139.84.247.129:8080/register-token', {
+  const res = await fetch('https://signals.novamobiles.co.za/register-token', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ studentId, token }),
