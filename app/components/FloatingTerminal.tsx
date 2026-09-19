@@ -31,6 +31,15 @@ export default function FloatingTerminal({
   const dragStart = useRef({ x: 0, y: 0, posX: 0, posY: 0 });
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  // Reset when logs cleared
+  useEffect(() => {
+    if (logs.length === 0) {
+      setDisplayedLogs([]);
+      setQueue([]);
+      setCurrentText('');
+    }
+  }, [logs.length]);
+
   // Queue new logs
   useEffect(() => {
     if (logs.length > 0) {
@@ -118,10 +127,10 @@ export default function FloatingTerminal({
 
   const getColor = (type: string) => {
     switch (type) {
-      case 'success': return 'text-green-400';
-      case 'signal': return 'text-yellow-400';
-      case 'error': return 'text-red-400';
-      default: return 'text-green-300';
+      case 'success': return 'text-green-700';
+      case 'signal': return 'text-orange-600';
+      case 'error': return 'text-red-600';
+      default: return 'text-black';
     }
   };
 
@@ -140,7 +149,7 @@ export default function FloatingTerminal({
       <div
         className="rounded-2xl overflow-hidden backdrop-blur-md"
         style={{
-          background: 'rgba(0,0,0,0.95)',
+          background: 'rgba(255,255,255,0.98)',
           border: `1.5px solid ${accentColor}`,
           boxShadow: `0 0 40px ${accentColor}80, 0 0 80px ${accentColor}40`,
         }}
@@ -156,37 +165,31 @@ export default function FloatingTerminal({
           }}
         >
           <div className="flex items-center gap-2">
-            {/* Drag handle dots */}
             <div className="flex flex-col gap-0.5 opacity-50">
               <div className="flex gap-0.5">
-                <div className="w-0.5 h-0.5 rounded-full bg-white" />
-                <div className="w-0.5 h-0.5 rounded-full bg-white" />
+                <div className="w-0.5 h-0.5 rounded-full bg-black" />
+                <div className="w-0.5 h-0.5 rounded-full bg-black" />
               </div>
               <div className="flex gap-0.5">
-                <div className="w-0.5 h-0.5 rounded-full bg-white" />
-                <div className="w-0.5 h-0.5 rounded-full bg-white" />
+                <div className="w-0.5 h-0.5 rounded-full bg-black" />
+                <div className="w-0.5 h-0.5 rounded-full bg-black" />
               </div>
               <div className="flex gap-0.5">
-                <div className="w-0.5 h-0.5 rounded-full bg-white" />
-                <div className="w-0.5 h-0.5 rounded-full bg-white" />
+                <div className="w-0.5 h-0.5 rounded-full bg-black" />
+                <div className="w-0.5 h-0.5 rounded-full bg-black" />
               </div>
             </div>
-            <span
-              className="text-xs font-bold tracking-wider"
-              style={{ color: accentColor }}
-            >
+            <span className="text-xs font-bold tracking-wider text-black">
               {mentorName.toUpperCase()}
             </span>
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Green dot - Connected */}
             <div className="flex items-center gap-1">
-              <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-              <span className="text-[9px] text-green-400">CONNECTED</span>
+              <div className="w-1.5 h-1.5 rounded-full bg-green-600 animate-pulse" />
+              <span className="text-[9px] text-green-700 font-bold">CONNECTED</span>
             </div>
 
-            {/* Close button */}
             <button
               onClick={onClose}
               onMouseDown={(e) => e.stopPropagation()}
@@ -203,30 +206,30 @@ export default function FloatingTerminal({
           </div>
         </div>
 
-        {/* Terminal Content */}
+        {/* Terminal Content - WHITE background, BLACK text */}
         <div
           ref={scrollRef}
-          className="p-3 h-44 overflow-y-auto font-mono"
-          style={{ background: 'rgba(0,10,30,0.95)' }}
+          className="p-3 h-44 overflow-y-auto font-mono select-text"
+          style={{ background: '#ffffff' }}
         >
           {displayedLogs.length === 0 && !currentText && (
-            <p className="text-gray-500 text-[10px]">Initializing...</p>
+            <p className="text-gray-400 text-[10px]">Waiting for signals...</p>
           )}
 
           {displayedLogs.map((log) => (
             <div
               key={log.id}
-              className={`${getColor(log.type)} text-[10px] leading-tight flex gap-1 mb-0.5`}
+              className={`${getColor(log.type)} text-[10px] leading-tight flex gap-1 mb-0.5 select-text`}
             >
-              <span className="text-green-600 flex-shrink-0">&gt;</span>
-              <span>{log.text}</span>
+              <span className="text-gray-500 flex-shrink-0">&gt;</span>
+              <span className="select-text">{log.text}</span>
             </div>
           ))}
 
           {currentText && (
-            <div className="text-green-300 text-[10px] leading-tight flex gap-1">
-              <span className="text-green-600 flex-shrink-0">&gt;</span>
-              <span>
+            <div className={`${getColor(logs[0]?.type || 'info')} text-[10px] leading-tight flex gap-1 select-text`}>
+              <span className="text-gray-500 flex-shrink-0">&gt;</span>
+              <span className="select-text">
                 {currentText}
                 <span className="animate-pulse">█</span>
               </span>

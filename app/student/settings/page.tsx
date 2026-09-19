@@ -12,7 +12,6 @@ export default function StudentSettings() {
   const [email, setEmail] = useState('');
 
   useEffect(() => {
-    // Check localStorage first (student session)
     const isLoggedIn = localStorage.getItem('student_logged_in');
     const studentData = JSON.parse(localStorage.getItem('student_demo') || '{}');
 
@@ -22,7 +21,6 @@ export default function StudentSettings() {
       return;
     }
 
-    // Fallback to Firebase auth
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setEmail(user.email || '');
@@ -37,17 +35,14 @@ export default function StudentSettings() {
   const handleLogout = async () => {
     setLoading(true);
 
-    // Clear student session
     localStorage.removeItem('student_logged_in');
     localStorage.removeItem('student_demo');
     localStorage.removeItem('fcm_token');
 
-    // Also sign out from Firebase if logged in
     try {
       await signOut(auth);
     } catch (e) {}
 
-    // Hard redirect to entry page
     window.location.href = '/student-entry';
   };
 
@@ -69,9 +64,10 @@ export default function StudentSettings() {
         <div className="w-8 h-8"></div>
       </header>
 
-      <div className="pt-20 px-4 max-w-md mx-auto">
+      <div className="pt-20 px-4 max-w-md mx-auto pb-20">
         <h1 className="text-2xl font-bold text-white mb-6">Settings</h1>
 
+        {/* Account Card */}
         <div className="bg-black/50 border border-red-500/20 rounded-xl p-4 mb-4 glow-red">
           <h3 className="text-white font-bold mb-4">Account</h3>
           <div className="space-y-3">
@@ -86,6 +82,24 @@ export default function StudentSettings() {
           </div>
         </div>
 
+        {/* Notifications Link */}
+        <Link
+          href="/student/notifications"
+          className="block bg-black/50 border border-red-500/20 rounded-xl p-4 mb-4 glow-red hover:border-red-500/50 transition"
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">🔔</span>
+              <div>
+                <h3 className="text-white font-bold">Notifications</h3>
+                <p className="text-gray-500 text-xs">View your signal history</p>
+              </div>
+            </div>
+            <span className="text-red-400 text-xl">›</span>
+          </div>
+        </Link>
+
+        {/* Appearance Card */}
         <div className="bg-black/50 border border-red-500/20 rounded-xl p-4 mb-4 glow-red">
           <h3 className="text-white font-bold mb-4">Appearance</h3>
           <div className="space-y-3">
@@ -106,6 +120,7 @@ export default function StudentSettings() {
           </div>
         </div>
 
+        {/* Logout */}
         <button
           onClick={handleLogout}
           disabled={loading}

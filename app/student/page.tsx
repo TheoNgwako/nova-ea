@@ -161,29 +161,49 @@ export default function StudentDashboard() {
     setTerminalLogs(prev => [newLog, ...prev].slice(0, 30));
   };
 
-  // ===== VPS SIGNAL HANDLER =====
-  const handleVpsSignal = (signal: SignalData) => {
-    console.log('🚨 REAL VPS SIGNAL:', signal);
+// ===== VPS SIGNAL HANDLER =====
+const handleVpsSignal = (signal: SignalData) => {
+  console.log('🚨 REAL VPS SIGNAL:', signal);
 
-    addLog(`NEW SIGNAL: ${signal.symbol} ${signal.action}`, 'signal');
+  // Save signal to notification history (last 10)
+  try {
+    const history = JSON.parse(localStorage.getItem('notif_history') || '[]');
+    const newNotif = {
+      id: signal.id || `notif_${Date.now()}`,
+      symbol: signal.symbol,
+      action: signal.action,
+      entry: signal.entry,
+      tp: signal.tp,
+      sl: signal.sl,
+      confidence: signal.confidence,
+      rsi: signal.rsi,
+      timestamp: signal.timestamp || new Date().toISOString(),
+    };
+    const updated = [newNotif, ...history].slice(0, 10);
+    localStorage.setItem('notif_history', JSON.stringify(updated));
+  } catch (e) {
+    console.error('Failed to save notif:', e);
+  }
 
-    setTimeout(() => {
-      addLog(`OPEN ${signal.action}: ${signal.symbol} 0.01`, 'info');
-    }, 800);
+  addLog(`NEW SIGNAL: ${signal.symbol} ${signal.action}`, 'signal');
 
-    setTimeout(() => {
-      addLog(`TP: ${signal.tp} | SL: ${signal.sl}`, 'info');
-    }, 1600);
+  setTimeout(() => {
+    addLog(`OPEN ${signal.action}: ${signal.symbol} 0.01`, 'info');
+  }, 800);
 
-    setTimeout(() => {
-      addLog(`CONFIDENCE: ${signal.confidence}% | RSI: ${signal.rsi}`, 'info');
-    }, 2400);
+  setTimeout(() => {
+    addLog(`TP: ${signal.tp} | SL: ${signal.sl}`, 'info');
+  }, 1600);
 
-    setTimeout(() => {
-      addLog(`✅ TRADE EXECUTED ON MT5`, 'success');
-      setTradeCount(prev => prev + 1);
-    }, 3200);
-  };
+  setTimeout(() => {
+    addLog(`CONFIDENCE: ${signal.confidence}% | RSI: ${signal.rsi}`, 'info');
+  }, 2400);
+
+  setTimeout(() => {
+    addLog(`✅ TRADE EXECUTED ON MT5`, 'success');
+    setTradeCount(prev => prev + 1);
+  }, 3200);
+};
 
   // ===== CONNECT TO VPS =====
   useEffect(() => {
@@ -220,32 +240,31 @@ export default function StudentDashboard() {
     };
   }, [isStarted]);
 
-  const handleToggle = () => {
-    if (!isStarted) {
-      setIsStarted(true);
-      setTerminalOpen(true);
-      addLog('STARTING ROBOT...', 'info');
-      setTimeout(() => addLog('CONNECTING TO VPS...', 'info'), 500);
-    } else {
-      setIsStarted(false);
-      setTerminalOpen(false);
-      addLog('ROBOT STOPPED', 'error');
-      disconnectFromSignalServer();
-    }
-  };
+const handleToggle = () => {
+  if (!isStarted) {
+    // Clear old logs when starting fresh
+    setTerminalLogs([]);
+    setIsStarted(true);
+    setTerminalOpen(true);
+    addLog('STARTING ROBOT...', 'info');
+    setTimeout(() => addLog('CONNECTING TO VPS...', 'info'), 500);
+  } else {
+    setIsStarted(false);
+    setTerminalOpen(false);
+    setIsConnected(false);
+    disconnectFromSignalServer();
+    // Clear terminal on stop
+    setTimeout(() => setTerminalLogs([]), 300);
+  }
+};
 
-  const handleEnableNotifications = async () => {
-    setNotifLoading(true);
-    const token = await requestNotificationPermission();
-    setNotifStatus(getNotificationStatus());
-    setNotifLoading(false);
-
-    if (token) {
-      addLog('🔔 NOTIFICATIONS ENABLED', 'success');
-    } else {
-      addLog('❌ NOTIFICATION FAILED', 'error');
-    }
-  };
+const handleEnableNotifications = async () => {
+  setNotifLoading(true);
+  const token = await requestNotificationPermission();
+  setNotifStatus(getNotificationStatus());
+  setNotifLoading(false);
+  // No logs — the button itself shows the status
+};
 
   const handleRemove = () => {
     setTerminalLogs([]);
