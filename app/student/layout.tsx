@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { SignalProvider } from '../lib/SignalContext';
 
 export default function StudentLayout({
   children,
@@ -33,5 +34,9 @@ export default function StudentLayout({
     );
   }
 
-  return <>{children}</>;
+  return (
+    <SignalProvider>
+      {children}
+    </SignalProvider>
+  );
 }

@@ -1,30 +1,18 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { requestNotificationPermission, getNotificationStatus } from '../lib/notifications';
 import Link from 'next/link';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useTheme } from '../context/ThemeContext';
+import { useSignal } from '../lib/SignalContext';
 import SettingsPanel from '../components/SettingsPanel';
 import FloatingTerminal from '../components/FloatingTerminal';
 import SmartScreen from '../components/SmartScreen';
 import PhoenixLayout from '../components/layouts/PhoenixLayout';
 import NovaLayout from '../components/layouts/NovaLayout';
 import InfernoLayout from '../components/layouts/InfernoLayout';
-import {
-  connectToSignalServer,
-  disconnectFromSignalServer,
-  onSignal,
-  onConnectionChange,
-  SignalData,
-} from '../lib/signalClient';
-
-type LogLine = {
-  id: string;
-  text: string;
-  type: 'info' | 'success' | 'signal' | 'error';
-};
 
 // ===== SVG Icons =====
 const SmartIcon = ({ color }: { color: string }) => (
@@ -68,13 +56,11 @@ const BellIcon = ({ color }: { color: string }) => (
 
 export default function StudentDashboard() {
   const { accentColor, font, layout } = useTheme();
+  const { isStarted, isConnected, terminalLogs, tradeCount, startRobot, stopRobot, clearLogs, addLog } = useSignal();
+
   const [balance, setBalance] = useState('10133.10');
   const [equity, setEquity] = useState('10134.41');
   const [profit, setProfit] = useState('+1.31');
-  const [isStarted, setIsStarted] = useState(false);
-  const [isConnected, setIsConnected] = useState(false);
-  const [terminalLogs, setTerminalLogs] = useState<LogLine[]>([]);
-  const [tradeCount, setTradeCount] = useState(0);
   const [mentorImage, setMentorImage] = useState<string | null>(null);
   const [mentorVideo, setMentorVideo] = useState<string | null>(null);
   const [mentorName, setMentorName] = useState('ZETAVIA');
@@ -84,8 +70,6 @@ export default function StudentDashboard() {
   const [terminalOpen, setTerminalOpen] = useState(false);
   const [notifStatus, setNotifStatus] = useState<'granted' | 'denied' | 'default' | 'unsupported'>('default');
   const [notifLoading, setNotifLoading] = useState(false);
-
-  const hasConnectedRef = useRef(false);
 
   const getFontFamily = () => {
     const fonts: Record<string, string> = {
@@ -112,12 +96,10 @@ export default function StudentDashboard() {
     return fonts[font] || 'system-ui';
   };
 
-  // Check notification permission on load
   useEffect(() => {
     setNotifStatus(getNotificationStatus());
   }, []);
 
-  // Fetch mentor media
   useEffect(() => {
     const fetchMentorMedia = async () => {
       try {
@@ -140,7 +122,6 @@ export default function StudentDashboard() {
     fetchMentorMedia();
   }, []);
 
-  // Balance changes
   useEffect(() => {
     const interval = setInterval(() => {
       const change = (Math.random() - 0.5) * 15;
@@ -152,132 +133,32 @@ export default function StudentDashboard() {
     return () => clearInterval(interval);
   }, []);
 
-  const addLog = (text: string, type: LogLine['type'] = 'info') => {
-    const newLog: LogLine = {
-      id: `${Date.now()}-${Math.random().toString(36).substring(7)}-${Math.random().toString(36).substring(7)}`,
-      text,
-      type,
-    };
-    setTerminalLogs(prev => [newLog, ...prev].slice(0, 30));
+  const handleToggle = () => {
+    if (!isStarted) {
+      startRobot();
+      setTerminalOpen(true);
+    } else {
+      stopRobot();
+      setTerminalOpen(false);
+    }
   };
 
-// ===== VPS SIGNAL HANDLER =====
-const handleVpsSignal = (signal: SignalData) => {
-  console.log('🚨 REAL VPS SIGNAL:', signal);
-
-  // Save signal to notification history (last 10)
-  try {
-    const history = JSON.parse(localStorage.getItem('notif_history') || '[]');
-    const newNotif = {
-      id: signal.id || `notif_${Date.now()}`,
-      symbol: signal.symbol,
-      action: signal.action,
-      entry: signal.entry,
-      tp: signal.tp,
-      sl: signal.sl,
-      confidence: signal.confidence,
-      rsi: signal.rsi,
-      timestamp: signal.timestamp || new Date().toISOString(),
-    };
-    const updated = [newNotif, ...history].slice(0, 10);
-    localStorage.setItem('notif_history', JSON.stringify(updated));
-  } catch (e) {
-    console.error('Failed to save notif:', e);
-  }
-
-  addLog(`NEW SIGNAL: ${signal.symbol} ${signal.action}`, 'signal');
-
-  setTimeout(() => {
-    addLog(`OPEN ${signal.action}: ${signal.symbol} 0.01`, 'info');
-  }, 800);
-
-  setTimeout(() => {
-    addLog(`TP: ${signal.tp} | SL: ${signal.sl}`, 'info');
-  }, 1600);
-
-  setTimeout(() => {
-    addLog(`CONFIDENCE: ${signal.confidence}% | RSI: ${signal.rsi}`, 'info');
-  }, 2400);
-
-  setTimeout(() => {
-    addLog(`✅ TRADE EXECUTED ON MT5`, 'success');
-    setTradeCount(prev => prev + 1);
-  }, 3200);
-};
-
-  // ===== CONNECT TO VPS =====
-  useEffect(() => {
-    if (!isStarted) {
-      if (hasConnectedRef.current) {
-        disconnectFromSignalServer();
-        hasConnectedRef.current = false;
-      }
-      return;
-    }
-
-    if (hasConnectedRef.current) return;
-    hasConnectedRef.current = true;
-
-    const studentData = JSON.parse(localStorage.getItem('student_demo') || '{}');
-    const studentId = studentData.email || `student_${Date.now()}`;
-
-    console.log('🔌 Connecting to VPS signal server...');
-    connectToSignalServer(studentId);
-
-    const unsubSignal = onSignal(handleVpsSignal);
-  const unsubStatus = onConnectionChange((connected) => {
-  setIsConnected(true); // ALWAYS show connected while isStarted
-  if (connected) {
-    addLog('🟢 VPS CONNECTED', 'success');
-  }
-  // Never log disconnects — silent reconnect
-  });
-
-    return () => {
-      unsubSignal();
-      unsubStatus();
-    };
-  }, [isStarted]);
-
-const handleToggle = () => {
-  if (!isStarted) {
-    setTerminalLogs([]);
-    setIsStarted(true);
-    setTerminalOpen(true);
-    setIsConnected(true); // Force connected status
-    addLog('STARTING ROBOT...', 'info');
-    addLog('CONNECTING TO VPS...', 'info');
-  }
-  else {
-    setIsStarted(false);
-    setTerminalOpen(false);
-    setIsConnected(false);
-    disconnectFromSignalServer();
-    // Clear terminal on stop
-    setTimeout(() => setTerminalLogs([]), 300);
-  }
-};
-
-const handleEnableNotifications = async () => {
-  setNotifLoading(true);
-  const token = await requestNotificationPermission();
-  setNotifStatus(getNotificationStatus());
-  setNotifLoading(false);
-  // No logs — the button itself shows the status
-};
+  const handleEnableNotifications = async () => {
+    setNotifLoading(true);
+    await requestNotificationPermission();
+    setNotifStatus(getNotificationStatus());
+    setNotifLoading(false);
+  };
 
   const handleRemove = () => {
-    setTerminalLogs([]);
-    setTradeCount(0);
-    setIsStarted(false);
+    clearLogs();
+    stopRobot();
     setTerminalOpen(false);
-    disconnectFromSignalServer();
     alert('Terminal cleared & robot reset');
   };
 
   return (
     <div className="min-h-screen text-white relative">
-      {/* Background */}
       {mentorVideo ? (
         <video autoPlay loop muted playsInline className="fixed inset-0 w-full h-full object-cover z-0" src={mentorVideo} />
       ) : mentorImage ? (
@@ -289,7 +170,6 @@ const handleEnableNotifications = async () => {
       <div className="fixed inset-0 bg-black/75 z-0" />
 
       <div className="relative z-10">
-        {/* Header */}
         <header
           className="fixed top-0 left-0 right-0 z-50 px-4 py-3 flex items-center justify-between backdrop-blur-md"
           style={{ background: 'rgba(0,0,0,0.6)', borderBottom: `1px solid ${accentColor}30` }}
@@ -341,8 +221,7 @@ const handleEnableNotifications = async () => {
             />
           )}
 
-          {/* Enable Notifications Button */}
-          {true && (
+          {notifStatus !== 'granted' && notifStatus !== 'unsupported' && (
             <div className="mt-6">
               <button
                 onClick={handleEnableNotifications}
@@ -373,7 +252,6 @@ const handleEnableNotifications = async () => {
           )}
         </div>
 
-        {/* Bottom Nav */}
         <div
           className="fixed bottom-0 left-0 right-0 z-50 flex justify-around items-center py-2"
           style={{ background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)', borderTop: `1px solid ${accentColor}30` }}
@@ -410,7 +288,6 @@ const handleEnableNotifications = async () => {
         </div>
       </div>
 
-      {/* Floating Terminal */}
       <FloatingTerminal
         isOpen={terminalOpen && isStarted}
         onClose={() => setTerminalOpen(false)}
@@ -419,7 +296,6 @@ const handleEnableNotifications = async () => {
         accentColor={accentColor}
       />
 
-      {/* Open Terminal Pill */}
       {isStarted && !terminalOpen && (
         <button
           onClick={() => setTerminalOpen(true)}
@@ -435,7 +311,6 @@ const handleEnableNotifications = async () => {
         </button>
       )}
 
-      {/* Panels */}
       <SettingsPanel isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
       <SmartScreen isOpen={smartOpen} onClose={() => setSmartOpen(false)} />
     </div>
