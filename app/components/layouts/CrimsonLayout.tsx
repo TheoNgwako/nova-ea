@@ -29,7 +29,11 @@ export default function CrimsonLayout({
     <>
       <p
         className="text-center text-base font-black tracking-widest mb-4 uppercase"
-        style={{ color: accentColor, textShadow: `0 0 20px ${accentColor}80` }}
+        style={{
+          color: accentColor,
+          WebkitTextFillColor: accentColor,
+          textShadow: `0 0 20px ${accentColor}80`,
+        }}
       >
         THE GREAT SON OF NAS
       </p>
@@ -44,6 +48,7 @@ export default function CrimsonLayout({
               boxShadow: `0 0 40px ${accentColor}30`,
             }}
           />
+
           <div
             className="absolute inset-2 rounded-full"
             style={{
@@ -51,31 +56,50 @@ export default function CrimsonLayout({
               boxShadow: `0 0 30px ${accentColor}80, inset 0 0 30px ${accentColor}40`,
             }}
           />
+
           <div className="absolute inset-4 rounded-full overflow-hidden">
             {mentorImage ? (
-              <img src={mentorImage} alt="AI" className="w-full h-full object-cover" />
+              <img
+                src={mentorImage}
+                alt="AI"
+                className="w-full h-full object-cover"
+              />
             ) : (
               <div
                 className="w-full h-full bg-gradient-to-br from-red-900/40 to-black flex items-center justify-center text-4xl font-black"
-                style={{ color: accentColor }}
+                style={{
+                  color: accentColor,
+                  WebkitTextFillColor: accentColor,
+                }}
               >
                 AI
               </div>
             )}
           </div>
+
           <div className="absolute bottom-2 right-4 w-3 h-3 bg-green-500 rounded-full border-2 border-black" />
         </div>
       </div>
 
-      <p className="text-center text-xs tracking-widest text-white mb-1">
+      {/* Trading With */}
+      <p
+        className="text-center text-xs tracking-widest mb-1"
+        style={{
+          color: '#ffffff',
+          WebkitTextFillColor: '#ffffff',
+        }}
+      >
         Your Trading With
       </p>
+
+      {/* AI / Robot Name */}
       <h1
         className="text-center text-3xl font-black tracking-wide mb-5"
         style={{
           fontFamily: getFontFamily(),
-          color: accentColor,
-          textShadow: `0 0 25px ${accentColor}`,
+          color: '#ffffff',
+          WebkitTextFillColor: '#ffffff',
+          textShadow: '0 0 18px rgba(255,255,255,0.35)',
         }}
       >
         {mentorName.toUpperCase()}
@@ -92,8 +116,19 @@ export default function CrimsonLayout({
             boxShadow: `0 0 15px ${accentColor}40`,
           }}
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={accentColor} strokeWidth="2">
-            <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" strokeLinecap="round" strokeLinejoin="round" />
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke={accentColor}
+            strokeWidth="2"
+          >
+            <path
+              d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </svg>
         </button>
 
@@ -107,16 +142,30 @@ export default function CrimsonLayout({
           }}
         >
           {isStarted ? (
-            <svg width="32" height="32" viewBox="0 0 24 24" fill={accentColor}>
+            <svg
+              width="32"
+              height="32"
+              viewBox="0 0 24 24"
+              fill={accentColor}
+            >
               <rect x="6" y="4" width="4" height="16" />
               <rect x="14" y="4" width="4" height="16" />
             </svg>
           ) : (
-            <svg width="32" height="32" viewBox="0 0 24 24" fill={accentColor}>
+            <svg
+              width="32"
+              height="32"
+              viewBox="0 0 24 24"
+              fill={accentColor}
+            >
               <path d="M6 4l14 8-14 8V4z" />
             </svg>
           )}
-          <span className="text-[10px] mt-1 font-bold" style={{ color: accentColor }}>
+
+          <span
+            className="text-[10px] mt-1 font-bold"
+            style={{ color: accentColor }}
+          >
             {isStarted ? 'STOP' : 'START'}
           </span>
         </button>
@@ -129,9 +178,24 @@ export default function CrimsonLayout({
             boxShadow: `0 0 15px ${accentColor}40`,
           }}
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={accentColor} strokeWidth="2">
-            <path d="M3 17l6-6 4 4 8-8" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M14 7h7v7" strokeLinecap="round" strokeLinejoin="round" />
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke={accentColor}
+            strokeWidth="2"
+          >
+            <path
+              d="M3 17l6-6 4 4 8-8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M14 7h7v7"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </svg>
         </button>
       </div>
@@ -140,10 +204,32 @@ export default function CrimsonLayout({
       <div className="flex justify-center mb-4">
         <div
           className="px-4 py-1.5 rounded-full text-[10px]"
-          style={{ border: `1px solid ${accentColor}60`, background: `${accentColor}10` }}
+          style={{
+            border: `1px solid ${accentColor}60`,
+            background: `${accentColor}10`,
+          }}
         >
-          <span className="text-white">Powered By</span>{' '}
-          <span className="text-white">NOVA EA</span>
+          {/* Always white */}
+          <span
+            style={{
+              color: '#ffffff',
+              WebkitTextFillColor: '#ffffff',
+            }}
+          >
+            Powered By
+          </span>{' '}
+
+          {/* Follows student's selected app colour */}
+          <span
+            className="font-bold"
+            style={{
+              color: accentColor,
+              WebkitTextFillColor: accentColor,
+              textShadow: `0 0 10px ${accentColor}80`,
+            }}
+          >
+            NOVA EA
+          </span>
         </div>
       </div>
 
@@ -161,18 +247,33 @@ export default function CrimsonLayout({
             style={{ border: `2px solid ${accentColor}` }}
           >
             {mentorImage ? (
-              <img src={mentorImage} alt="Robot" className="w-full h-full object-cover" />
+              <img
+                src={mentorImage}
+                alt="Robot"
+                className="w-full h-full object-cover"
+              />
             ) : (
               <div className="w-full h-full bg-black" />
             )}
           </div>
+
           <div className="flex-1 min-w-0">
-            <h2 className="text-xs font-bold text-white truncate">{mentorName}</h2>
-            <p className="text-[10px] text-white/70 truncate">{mentorTagline}</p>
+            <h2 className="text-xs font-bold text-white truncate">
+              {mentorName}
+            </h2>
+
+            <p className="text-[10px] text-white/70 truncate">
+              {mentorTagline}
+            </p>
           </div>
+
           <span
             className="text-[9px] px-2 py-1 rounded-full"
-            style={{ background: `${accentColor}20`, color: accentColor, border: `1px solid ${accentColor}40` }}
+            style={{
+              background: `${accentColor}20`,
+              color: accentColor,
+              border: `1px solid ${accentColor}40`,
+            }}
           >
             {isStarted ? 'LIVE' : 'IDLE'}
           </span>
@@ -181,15 +282,35 @@ export default function CrimsonLayout({
 
       {/* Balance / Equity / Profit */}
       <div className="grid grid-cols-3 gap-2">
-        <div className="rounded-lg p-2 text-center" style={{ background: 'rgba(0,0,0,0.7)', border: `1px solid ${accentColor}30` }}>
+        <div
+          className="rounded-lg p-2 text-center"
+          style={{
+            background: 'rgba(0,0,0,0.7)',
+            border: `1px solid ${accentColor}30`,
+          }}
+        >
           <p className="text-[9px] text-white">BALANCE</p>
           <p className="text-sm font-bold text-white">10133</p>
         </div>
-        <div className="rounded-lg p-2 text-center" style={{ background: 'rgba(0,0,0,0.7)', border: `1px solid ${accentColor}30` }}>
+
+        <div
+          className="rounded-lg p-2 text-center"
+          style={{
+            background: 'rgba(0,0,0,0.7)',
+            border: `1px solid ${accentColor}30`,
+          }}
+        >
           <p className="text-[9px] text-white">EQUITY</p>
           <p className="text-sm font-bold text-white">10134</p>
         </div>
-        <div className="rounded-lg p-2 text-center" style={{ background: 'rgba(0,0,0,0.7)', border: `1px solid ${accentColor}30` }}>
+
+        <div
+          className="rounded-lg p-2 text-center"
+          style={{
+            background: 'rgba(0,0,0,0.7)',
+            border: `1px solid ${accentColor}30`,
+          }}
+        >
           <p className="text-[9px] text-white">PROFIT</p>
           <p className="text-sm font-bold text-green-500">+1.31</p>
         </div>

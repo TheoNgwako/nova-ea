@@ -27,9 +27,14 @@ export default function PhoenixLayout({
 
   return (
     <>
+      {/* Slogan - Accent Colour */}
       <p
         className="text-center text-base font-black tracking-widest mb-2 uppercase"
-        style={{ color: accentColor, textShadow: `0 0 20px ${accentColor}80` }}
+        style={{
+          color: accentColor,
+          WebkitTextFillColor: accentColor,
+          textShadow: `0 0 20px ${accentColor}80`,
+        }}
       >
         THE GREAT SON OF NAS
       </p>
@@ -45,11 +50,18 @@ export default function PhoenixLayout({
             }}
           >
             {mentorImage ? (
-              <img src={mentorImage} alt="AI" className="w-full h-full object-cover" />
+              <img
+                src={mentorImage}
+                alt="AI"
+                className="w-full h-full object-cover"
+              />
             ) : (
               <div
                 className="w-full h-full bg-gradient-to-br from-red-900/40 to-black flex items-center justify-center text-6xl font-black"
-                style={{ color: accentColor }}
+                style={{
+                  color: accentColor,
+                  WebkitTextFillColor: accentColor,
+                }}
               >
                 AI
               </div>
@@ -58,10 +70,17 @@ export default function PhoenixLayout({
 
           <div
             className="absolute -bottom-2 -left-2 w-16 h-16 rounded-full overflow-hidden"
-            style={{ border: `2px solid ${accentColor}`, boxShadow: `0 0 15px ${accentColor}` }}
+            style={{
+              border: `2px solid ${accentColor}`,
+              boxShadow: `0 0 15px ${accentColor}`,
+            }}
           >
             {mentorImage ? (
-              <img src={mentorImage} alt="Avatar" className="w-full h-full object-cover" />
+              <img
+                src={mentorImage}
+                alt="Avatar"
+                className="w-full h-full object-cover"
+              />
             ) : (
               <div className="w-full h-full bg-black" />
             )}
@@ -71,27 +90,60 @@ export default function PhoenixLayout({
         </div>
       </div>
 
-      <p className="text-center text-xs tracking-widest mt-4" style={{ color: '#ffffff' }}>
+      {/* Your Trading With - Always White */}
+      <p
+        className="text-center text-xs tracking-widest mt-4"
+        style={{
+          color: '#ffffff',
+          WebkitTextFillColor: '#ffffff',
+        }}
+      >
         Your Trading With
       </p>
+
+      {/* AI / Robot Name - Always White */}
       <h1
         className="text-center text-4xl font-black tracking-wider mb-4"
         style={{
           fontFamily: getFontFamily(),
-          color: accentColor,
-          textShadow: `0 0 25px ${accentColor}`,
+          color: '#ffffff',
+          WebkitTextFillColor: '#ffffff',
+          textShadow: '0 0 18px rgba(255,255,255,0.35)',
         }}
       >
         {mentorName.toUpperCase()}
       </h1>
 
+      {/* Powered By */}
       <div className="flex justify-center mb-6">
         <div
           className="px-5 py-2 rounded-full text-xs"
-          style={{ border: `1px solid ${accentColor}60`, background: `${accentColor}10` }}
+          style={{
+            border: `1px solid ${accentColor}60`,
+            background: `${accentColor}10`,
+          }}
         >
-          <span style={{ color: '#ffffff' }}>Powered By</span>{' '}
-          <span style={{ color: '#ffffff' }}>NOVA EA</span>
+          {/* Powered By - Always White */}
+          <span
+            style={{
+              color: '#ffffff',
+              WebkitTextFillColor: '#ffffff',
+            }}
+          >
+            Powered By
+          </span>{' '}
+
+          {/* NOVA EA - Dynamic Accent Colour */}
+          <span
+            className="font-bold"
+            style={{
+              color: accentColor,
+              WebkitTextFillColor: accentColor,
+              textShadow: `0 0 10px ${accentColor}80`,
+            }}
+          >
+            NOVA EA
+          </span>
         </div>
       </div>
 
@@ -107,8 +159,19 @@ export default function PhoenixLayout({
             boxShadow: `0 0 15px ${accentColor}40`,
           }}
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={accentColor} strokeWidth="2">
-            <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" strokeLinecap="round" strokeLinejoin="round" />
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke={accentColor}
+            strokeWidth="2"
+          >
+            <path
+              d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </svg>
           <span className="text-[9px] mt-0.5">REMOVE</span>
         </button>
@@ -124,16 +187,29 @@ export default function PhoenixLayout({
           }}
         >
           {isStarted ? (
-            <svg width="32" height="32" viewBox="0 0 24 24" fill={accentColor}>
+            <svg
+              width="32"
+              height="32"
+              viewBox="0 0 24 24"
+              fill={accentColor}
+            >
               <rect x="6" y="4" width="4" height="16" />
               <rect x="14" y="4" width="4" height="16" />
             </svg>
           ) : (
-            <svg width="32" height="32" viewBox="0 0 24 24" fill={accentColor}>
+            <svg
+              width="32"
+              height="32"
+              viewBox="0 0 24 24"
+              fill={accentColor}
+            >
               <path d="M6 4l14 8-14 8V4z" />
             </svg>
           )}
-          <span className="text-[10px] mt-1 font-bold">{isStarted ? 'STOP' : 'START'}</span>
+
+          <span className="text-[10px] mt-1 font-bold">
+            {isStarted ? 'STOP' : 'START'}
+          </span>
         </button>
 
         <button
@@ -145,9 +221,24 @@ export default function PhoenixLayout({
             boxShadow: `0 0 15px ${accentColor}40`,
           }}
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={accentColor} strokeWidth="2">
-            <path d="M3 17l6-6 4 4 8-8" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M14 7h7v7" strokeLinecap="round" strokeLinejoin="round" />
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke={accentColor}
+            strokeWidth="2"
+          >
+            <path
+              d="M3 17l6-6 4 4 8-8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M14 7h7v7"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </svg>
           <span className="text-[9px] mt-0.5">QUOTES</span>
         </button>
@@ -165,21 +256,59 @@ export default function PhoenixLayout({
         <div className="flex items-center gap-3">
           <div
             className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0"
-            style={{ border: `2px solid ${accentColor}`, boxShadow: `0 0 10px ${accentColor}` }}
+            style={{
+              border: `2px solid ${accentColor}`,
+              boxShadow: `0 0 10px ${accentColor}`,
+            }}
           >
             {mentorImage ? (
-              <img src={mentorImage} alt="Robot" className="w-full h-full object-cover" />
+              <img
+                src={mentorImage}
+                alt="Robot"
+                className="w-full h-full object-cover"
+              />
             ) : (
-              <div className="w-full h-full bg-black flex items-center justify-center text-sm font-bold" style={{ color: accentColor }}>AI</div>
+              <div
+                className="w-full h-full bg-black flex items-center justify-center text-sm font-bold"
+                style={{
+                  color: accentColor,
+                  WebkitTextFillColor: accentColor,
+                }}
+              >
+                AI
+              </div>
             )}
           </div>
+
           <div className="flex-1 min-w-0">
-            <h2 className="text-sm font-bold truncate" style={{ color: '#ffffff' }}>{mentorName}</h2>
-            <p className="text-[10px] truncate" style={{ color: '#ffffff' }}>{mentorTagline}</p>
+            <h2
+              className="text-sm font-bold truncate"
+              style={{
+                color: '#ffffff',
+                WebkitTextFillColor: '#ffffff',
+              }}
+            >
+              {mentorName}
+            </h2>
+
+            <p
+              className="text-[10px] truncate"
+              style={{
+                color: '#ffffff',
+                WebkitTextFillColor: '#ffffff',
+              }}
+            >
+              {mentorTagline}
+            </p>
           </div>
+
           <span
             className="text-[10px] px-2 py-1 rounded-full"
-            style={{ background: `${accentColor}20`, color: accentColor, border: `1px solid ${accentColor}40` }}
+            style={{
+              background: `${accentColor}20`,
+              color: accentColor,
+              border: `1px solid ${accentColor}40`,
+            }}
           >
             {isStarted ? 'CONNECTED' : 'DISCONNECTED'}
           </span>

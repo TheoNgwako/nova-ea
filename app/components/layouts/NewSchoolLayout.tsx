@@ -27,9 +27,14 @@ export default function NewSchoolLayout({
 
   return (
     <>
+      {/* Slogan - Accent Colour */}
       <p
         className="text-center text-base font-black tracking-widest mb-3 uppercase"
-        style={{ color: accentColor, textShadow: `0 0 20px ${accentColor}80` }}
+        style={{
+          color: accentColor,
+          WebkitTextFillColor: accentColor,
+          textShadow: `0 0 20px ${accentColor}80`,
+        }}
       >
         THE GREAT SON OF NAS
       </p>
@@ -44,7 +49,11 @@ export default function NewSchoolLayout({
         }}
       >
         {mentorImage ? (
-          <img src={mentorImage} alt="AI" className="absolute inset-0 w-full h-full object-cover" />
+          <img
+            src={mentorImage}
+            alt="AI"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
         ) : (
           <div className="absolute inset-0 bg-gradient-to-br from-red-900/40 to-black" />
         )}
@@ -53,26 +62,40 @@ export default function NewSchoolLayout({
 
         <div className="absolute top-3 right-3 flex items-center gap-2 px-3 py-1 rounded-full bg-black/70 backdrop-blur-sm">
           <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+
           <span className="text-[10px] text-white font-bold">
             {isStarted ? 'LIVE' : 'IDLE'}
           </span>
         </div>
 
         <div className="absolute bottom-0 left-0 right-0 p-5">
-          <p className="text-[10px] tracking-widest text-white mb-1 uppercase">
+          {/* Your Trading With - Always White */}
+          <p
+            className="text-[10px] tracking-widest mb-1 uppercase"
+            style={{
+              color: '#ffffff',
+              WebkitTextFillColor: '#ffffff',
+            }}
+          >
             YOUR TRADING WITH
           </p>
+
+          {/* AI / Robot Name - Always White */}
           <h1
             className="text-3xl font-black tracking-wide mb-2"
             style={{
               fontFamily: getFontFamily(),
-              color: accentColor,
-              textShadow: `0 0 25px ${accentColor}`,
+              color: '#ffffff',
+              WebkitTextFillColor: '#ffffff',
+              textShadow: '0 0 18px rgba(255,255,255,0.35)',
             }}
           >
             {mentorName.toUpperCase()}
           </h1>
-          <p className="text-[11px] text-white/80 mb-4 line-clamp-2">{mentorTagline}</p>
+
+          <p className="text-[11px] text-white/80 mb-4 line-clamp-2">
+            {mentorTagline}
+          </p>
 
           <div className="flex gap-2">
             <button
@@ -85,8 +108,19 @@ export default function NewSchoolLayout({
                 boxShadow: `0 0 15px ${accentColor}40`,
               }}
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={accentColor} strokeWidth="2">
-                <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" strokeLinecap="round" strokeLinejoin="round" />
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke={accentColor}
+                strokeWidth="2"
+              >
+                <path
+                  d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
               </svg>
             </button>
 
@@ -94,7 +128,9 @@ export default function NewSchoolLayout({
               onClick={onToggle}
               className="flex-1 py-3 rounded-full font-black text-sm pulse-glow transition active:scale-95"
               style={{
-                background: isStarted ? 'rgba(255,0,0,0.9)' : accentColor,
+                background: isStarted
+                  ? 'rgba(255,0,0,0.9)'
+                  : accentColor,
                 color: isStarted ? '#fff' : '#000',
                 boxShadow: `0 0 25px ${accentColor}`,
               }}
@@ -111,9 +147,24 @@ export default function NewSchoolLayout({
                 boxShadow: `0 0 15px ${accentColor}40`,
               }}
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={accentColor} strokeWidth="2">
-                <path d="M3 17l6-6 4 4 8-8" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M14 7h7v7" strokeLinecap="round" strokeLinejoin="round" />
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke={accentColor}
+                strokeWidth="2"
+              >
+                <path
+                  d="M3 17l6-6 4 4 8-8"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M14 7h7v7"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
               </svg>
             </button>
           </div>
@@ -122,17 +173,49 @@ export default function NewSchoolLayout({
 
       {/* Balance Stats Row */}
       <div className="grid grid-cols-3 gap-2 mb-4">
-        <div className="rounded-xl p-3 text-center" style={{ background: 'rgba(0,0,0,0.7)', border: `1px solid ${accentColor}30` }}>
-          <p className="text-[9px] text-white tracking-widest">BALANCE</p>
-          <p className="text-base font-bold text-white">10133</p>
+        <div
+          className="rounded-xl p-3 text-center"
+          style={{
+            background: 'rgba(0,0,0,0.7)',
+            border: `1px solid ${accentColor}30`,
+          }}
+        >
+          <p className="text-[9px] text-white tracking-widest">
+            BALANCE
+          </p>
+          <p className="text-base font-bold text-white">
+            10133
+          </p>
         </div>
-        <div className="rounded-xl p-3 text-center" style={{ background: 'rgba(0,0,0,0.7)', border: `1px solid ${accentColor}30` }}>
-          <p className="text-[9px] text-white tracking-widest">EQUITY</p>
-          <p className="text-base font-bold text-white">10134</p>
+
+        <div
+          className="rounded-xl p-3 text-center"
+          style={{
+            background: 'rgba(0,0,0,0.7)',
+            border: `1px solid ${accentColor}30`,
+          }}
+        >
+          <p className="text-[9px] text-white tracking-widest">
+            EQUITY
+          </p>
+          <p className="text-base font-bold text-white">
+            10134
+          </p>
         </div>
-        <div className="rounded-xl p-3 text-center" style={{ background: 'rgba(0,0,0,0.7)', border: `1px solid ${accentColor}30` }}>
-          <p className="text-[9px] text-white tracking-widest">PROFIT</p>
-          <p className="text-base font-bold text-green-500">+1.31</p>
+
+        <div
+          className="rounded-xl p-3 text-center"
+          style={{
+            background: 'rgba(0,0,0,0.7)',
+            border: `1px solid ${accentColor}30`,
+          }}
+        >
+          <p className="text-[9px] text-white tracking-widest">
+            PROFIT
+          </p>
+          <p className="text-base font-bold text-green-500">
+            +1.31
+          </p>
         </div>
       </div>
 
@@ -140,10 +223,32 @@ export default function NewSchoolLayout({
       <div className="flex justify-center">
         <div
           className="px-4 py-1.5 rounded-full text-[10px]"
-          style={{ border: `1px solid ${accentColor}60`, background: `${accentColor}10` }}
+          style={{
+            border: `1px solid ${accentColor}60`,
+            background: `${accentColor}10`,
+          }}
         >
-          <span className="text-white">Powered By</span>{' '}
-          <span className="text-white">NOVA EA</span>
+          {/* Powered By - Always White */}
+          <span
+            style={{
+              color: '#ffffff',
+              WebkitTextFillColor: '#ffffff',
+            }}
+          >
+            Powered By
+          </span>{' '}
+
+          {/* NOVA EA - Dynamic Accent Colour */}
+          <span
+            className="font-bold"
+            style={{
+              color: accentColor,
+              WebkitTextFillColor: accentColor,
+              textShadow: `0 0 10px ${accentColor}80`,
+            }}
+          >
+            NOVA EA
+          </span>
         </div>
       </div>
     </>

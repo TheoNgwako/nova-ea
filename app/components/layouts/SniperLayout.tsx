@@ -35,15 +35,20 @@ export default function SniperLayout({
             {isStarted ? 'ONLINE' : 'STANDBY'}
           </span>
         </div>
+
         <span className="text-[9px] tracking-widest text-white">
           SNIPER MODE
         </span>
       </div>
 
-      {/* Big Header */}
+      {/* Big Header - Accent Colour */}
       <p
         className="text-center text-base font-black tracking-widest mb-5 uppercase"
-        style={{ color: accentColor, textShadow: `0 0 20px ${accentColor}80` }}
+        style={{
+          color: accentColor,
+          WebkitTextFillColor: accentColor,
+          textShadow: `0 0 20px ${accentColor}80`,
+        }}
       >
         THE GREAT SON OF NAS
       </p>
@@ -58,25 +63,41 @@ export default function SniperLayout({
           }}
         >
           {mentorImage ? (
-            <img src={mentorImage} alt="AI" className="w-full h-full object-cover" />
+            <img
+              src={mentorImage}
+              alt="AI"
+              className="w-full h-full object-cover"
+            />
           ) : (
-            <div className="w-full h-full bg-black flex items-center justify-center text-lg font-black" style={{ color: accentColor }}>
+            <div
+              className="w-full h-full bg-black flex items-center justify-center text-lg font-black"
+              style={{
+                color: accentColor,
+                WebkitTextFillColor: accentColor,
+              }}
+            >
               AI
             </div>
           )}
         </div>
+
         <div className="flex-1 min-w-0">
+          {/* AI / Robot Name - Always White */}
           <h1
             className="text-xl font-black tracking-wide truncate"
             style={{
               fontFamily: getFontFamily(),
-              color: accentColor,
-              textShadow: `0 0 15px ${accentColor}`,
+              color: '#ffffff',
+              WebkitTextFillColor: '#ffffff',
+              textShadow: '0 0 15px rgba(255,255,255,0.35)',
             }}
           >
             {mentorName.toUpperCase()}
           </h1>
-          <p className="text-[10px] text-white/70 truncate">{mentorTagline}</p>
+
+          <p className="text-[10px] text-white/70 truncate">
+            {mentorTagline}
+          </p>
         </div>
       </div>
 
@@ -88,24 +109,40 @@ export default function SniperLayout({
           background: isStarted ? 'rgba(255,0,0,0.85)' : accentColor,
           color: isStarted ? '#fff' : '#000',
           boxShadow: isStarted
-            ? `0 0 40px rgba(255,0,0,0.6)`
+            ? '0 0 40px rgba(255,0,0,0.6)'
             : `0 0 40px ${accentColor}80, 0 0 80px ${accentColor}40`,
         }}
       >
         {isStarted ? (
           <>
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+            <svg
+              width="28"
+              height="28"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+            >
               <rect x="6" y="4" width="4" height="16" />
               <rect x="14" y="4" width="4" height="16" />
             </svg>
-            <span className="text-2xl font-black tracking-widest">STOP</span>
+
+            <span className="text-2xl font-black tracking-widest">
+              STOP
+            </span>
           </>
         ) : (
           <>
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+            <svg
+              width="28"
+              height="28"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+            >
               <path d="M6 4l14 8-14 8V4z" />
             </svg>
-            <span className="text-2xl font-black tracking-widest">START</span>
+
+            <span className="text-2xl font-black tracking-widest">
+              START
+            </span>
           </>
         )}
       </button>
@@ -123,6 +160,7 @@ export default function SniperLayout({
         >
           🗑 REMOVE
         </button>
+
         <button
           className="py-3 rounded-xl text-xs font-bold transition active:scale-95"
           style={{
@@ -138,26 +176,67 @@ export default function SniperLayout({
       {/* Stats Table */}
       <div
         className="rounded-xl overflow-hidden mb-4"
-        style={{ border: `1px solid ${accentColor}30` }}
+        style={{
+          border: `1px solid ${accentColor}30`,
+        }}
       >
         <div className="grid grid-cols-2 divide-x divide-white/5">
-          <div className="p-3" style={{ background: 'rgba(0,0,0,0.5)' }}>
-            <p className="text-[9px] tracking-widest text-white">BALANCE</p>
-            <p className="text-sm font-bold text-white mt-1">10133.10</p>
+          <div
+            className="p-3"
+            style={{
+              background: 'rgba(0,0,0,0.5)',
+            }}
+          >
+            <p className="text-[9px] tracking-widest text-white">
+              BALANCE
+            </p>
+            <p className="text-sm font-bold text-white mt-1">
+              10133.10
+            </p>
           </div>
-          <div className="p-3" style={{ background: 'rgba(0,0,0,0.5)' }}>
-            <p className="text-[9px] tracking-widest text-white">EQUITY</p>
-            <p className="text-sm font-bold text-white mt-1">10134.41</p>
+
+          <div
+            className="p-3"
+            style={{
+              background: 'rgba(0,0,0,0.5)',
+            }}
+          >
+            <p className="text-[9px] tracking-widest text-white">
+              EQUITY
+            </p>
+            <p className="text-sm font-bold text-white mt-1">
+              10134.41
+            </p>
           </div>
         </div>
+
         <div className="border-t border-white/5 grid grid-cols-2 divide-x divide-white/5">
-          <div className="p-3" style={{ background: 'rgba(0,0,0,0.5)' }}>
-            <p className="text-[9px] tracking-widest text-white">PROFIT</p>
-            <p className="text-sm font-bold text-green-500 mt-1">+1.31</p>
+          <div
+            className="p-3"
+            style={{
+              background: 'rgba(0,0,0,0.5)',
+            }}
+          >
+            <p className="text-[9px] tracking-widest text-white">
+              PROFIT
+            </p>
+            <p className="text-sm font-bold text-green-500 mt-1">
+              +1.31
+            </p>
           </div>
-          <div className="p-3" style={{ background: 'rgba(0,0,0,0.5)' }}>
-            <p className="text-[9px] tracking-widest text-white">POSITIONS</p>
-            <p className="text-sm font-bold text-white mt-1">0</p>
+
+          <div
+            className="p-3"
+            style={{
+              background: 'rgba(0,0,0,0.5)',
+            }}
+          >
+            <p className="text-[9px] tracking-widest text-white">
+              POSITIONS
+            </p>
+            <p className="text-sm font-bold text-white mt-1">
+              0
+            </p>
           </div>
         </div>
       </div>
@@ -166,10 +245,31 @@ export default function SniperLayout({
       <div className="flex justify-center">
         <div
           className="px-3 py-1 rounded text-[9px]"
-          style={{ border: `1px solid ${accentColor}30` }}
+          style={{
+            border: `1px solid ${accentColor}30`,
+          }}
         >
-          <span className="text-white">Powered By</span>{' '}
-          <span className="text-white">NOVA EA</span>
+          {/* Powered By - Always White */}
+          <span
+            style={{
+              color: '#ffffff',
+              WebkitTextFillColor: '#ffffff',
+            }}
+          >
+            Powered By
+          </span>{' '}
+
+          {/* NOVA EA - Dynamic Accent Colour */}
+          <span
+            className="font-bold"
+            style={{
+              color: accentColor,
+              WebkitTextFillColor: accentColor,
+              textShadow: `0 0 10px ${accentColor}80`,
+            }}
+          >
+            NOVA EA
+          </span>
         </div>
       </div>
     </>

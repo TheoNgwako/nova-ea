@@ -27,9 +27,14 @@ export default function PhantomLayout({
 
   return (
     <>
+      {/* Slogan - Accent Colour */}
       <p
         className="text-center text-base font-black tracking-widest mb-6 uppercase"
-        style={{ color: accentColor, textShadow: `0 0 20px ${accentColor}80` }}
+        style={{
+          color: accentColor,
+          WebkitTextFillColor: accentColor,
+          textShadow: `0 0 20px ${accentColor}80`,
+        }}
       >
         THE GREAT SON OF NAS
       </p>
@@ -41,25 +46,47 @@ export default function PhantomLayout({
             style={{ border: `1px solid ${accentColor}60` }}
           >
             {mentorImage ? (
-              <img src={mentorImage} alt="AI" className="w-full h-full object-cover" />
+              <img
+                src={mentorImage}
+                alt="AI"
+                className="w-full h-full object-cover"
+              />
             ) : (
-              <div className="w-full h-full bg-black flex items-center justify-center text-2xl font-black opacity-60" style={{ color: accentColor }}>
+              <div
+                className="w-full h-full bg-black flex items-center justify-center text-2xl font-black opacity-60"
+                style={{
+                  color: accentColor,
+                  WebkitTextFillColor: accentColor,
+                }}
+              >
                 AI
               </div>
             )}
           </div>
+
           <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border border-black" />
         </div>
       </div>
 
-      <p className="text-center text-xs tracking-widest text-white mb-1">
+      {/* Your Trading With - Always White */}
+      <p
+        className="text-center text-xs tracking-widest mb-1"
+        style={{
+          color: '#ffffff',
+          WebkitTextFillColor: '#ffffff',
+        }}
+      >
         Your Trading With
       </p>
+
+      {/* AI / Robot Name - Always White */}
       <h1
         className="text-center text-xl font-light tracking-[0.2em] mb-6"
         style={{
           fontFamily: getFontFamily(),
-          color: accentColor,
+          color: '#ffffff',
+          WebkitTextFillColor: '#ffffff',
+          textShadow: '0 0 14px rgba(255,255,255,0.25)',
         }}
       >
         {mentorName.toUpperCase()}
@@ -79,16 +106,28 @@ export default function PhantomLayout({
           style={{
             border: `1px solid ${accentColor}`,
             background: 'transparent',
-            boxShadow: isStarted ? `0 0 20px ${accentColor}60` : 'none',
+            boxShadow: isStarted
+              ? `0 0 20px ${accentColor}60`
+              : 'none',
           }}
         >
           {isStarted ? (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill={accentColor}>
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill={accentColor}
+            >
               <rect x="7" y="5" width="3" height="14" />
               <rect x="14" y="5" width="3" height="14" />
             </svg>
           ) : (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill={accentColor}>
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill={accentColor}
+            >
               <path d="M7 5l12 7-12 7V5z" />
             </svg>
           )}
@@ -101,16 +140,30 @@ export default function PhantomLayout({
 
       <div className="space-y-3 mb-6">
         <div className="flex justify-between items-center py-2 border-b border-white/5">
-          <span className="text-[10px] tracking-widest text-white">BALANCE</span>
-          <span className="text-sm font-light text-white">10133.10</span>
+          <span className="text-[10px] tracking-widest text-white">
+            BALANCE
+          </span>
+          <span className="text-sm font-light text-white">
+            10133.10
+          </span>
         </div>
+
         <div className="flex justify-between items-center py-2 border-b border-white/5">
-          <span className="text-[10px] tracking-widest text-white">EQUITY</span>
-          <span className="text-sm font-light text-white">10134.41</span>
+          <span className="text-[10px] tracking-widest text-white">
+            EQUITY
+          </span>
+          <span className="text-sm font-light text-white">
+            10134.41
+          </span>
         </div>
+
         <div className="flex justify-between items-center py-2 border-b border-white/5">
-          <span className="text-[10px] tracking-widest text-white">PROFIT</span>
-          <span className="text-sm font-light text-green-500">+1.31</span>
+          <span className="text-[10px] tracking-widest text-white">
+            PROFIT
+          </span>
+          <span className="text-sm font-light text-green-500">
+            +1.31
+          </span>
         </div>
       </div>
 
@@ -118,17 +171,43 @@ export default function PhantomLayout({
       <div className="flex justify-center mb-6">
         <div
           className="px-4 py-1.5 rounded-full text-[10px]"
-          style={{ border: `1px solid ${accentColor}60`, background: `${accentColor}10` }}
+          style={{
+            border: `1px solid ${accentColor}60`,
+            background: `${accentColor}10`,
+          }}
         >
-          <span className="text-white">Powered By</span>{' '}
-          <span className="text-white">NOVA EA</span>
+          {/* Powered By - Always White */}
+          <span
+            style={{
+              color: '#ffffff',
+              WebkitTextFillColor: '#ffffff',
+            }}
+          >
+            Powered By
+          </span>{' '}
+
+          {/* NOVA EA - Dynamic Accent Colour */}
+          <span
+            className="font-bold"
+            style={{
+              color: accentColor,
+              WebkitTextFillColor: accentColor,
+              textShadow: `0 0 10px ${accentColor}80`,
+            }}
+          >
+            NOVA EA
+          </span>
         </div>
       </div>
 
       <div className="flex justify-center">
         <div className="flex items-center gap-2 text-[10px] tracking-widest text-white">
           <div
-            className={`w-1.5 h-1.5 rounded-full ${isStarted ? 'bg-green-500 animate-pulse' : 'bg-white/20'}`}
+            className={`w-1.5 h-1.5 rounded-full ${
+              isStarted
+                ? 'bg-green-500 animate-pulse'
+                : 'bg-white/20'
+            }`}
           />
           <span>{isStarted ? 'ACTIVE' : 'IDLE'}</span>
         </div>
