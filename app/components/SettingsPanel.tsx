@@ -132,20 +132,18 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                     <div>
                       <p
                         className="font-bold text-sm"
-                        style={{
-                          color: layout === l.id ? accentColor : 'white',
-                        }}
+                        style={{ color: '#ffffff' }}
                       >
                         {l.name}
                       </p>
-                      <p className="text-white/60 text-xs mt-0.5">{l.desc}</p>
+                      <p className="text-xs mt-0.5" style={{ color: '#ffffff' }}>{l.desc}</p>
                     </div>
                     {layout === l.id && (
                       <div
                         className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
                         style={{ background: accentColor }}
                       >
-                        <span className="text-black text-xs font-bold">✓</span>
+                        <span style={{ color: '#000000' }} className="text-xs font-bold">✓</span>
                       </div>
                     )}
                   </div>
@@ -175,13 +173,10 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                     boxShadow: shape === s.id ? `0 0 20px ${accentColor}40` : undefined,
                   }}
                 >
-                  <p
-                    className="font-bold text-sm"
-                    style={{ color: shape === s.id ? accentColor : 'white' }}
-                  >
+                  <p className="font-bold text-sm" style={{ color: '#ffffff' }}>
                     {s.name}
                   </p>
-                  <p className="text-white/60 text-xs mt-0.5">{s.desc}</p>
+                  <p className="text-xs mt-0.5" style={{ color: '#ffffff' }}>{s.desc}</p>
                 </button>
               ))}
             </div>
@@ -223,12 +218,12 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
                     className="text-lg font-bold"
                     style={{
                       fontFamily: f.family,
-                      color: font === f.id ? accentColor : 'white',
+                      color: '#ffffff',
                     }}
                   >
                     {f.name}
                   </p>
-                  <p className="text-white/60 text-xs mt-0.5">EA Name Font Style</p>
+                  <p className="text-xs mt-0.5" style={{ color: '#ffffff' }}>EA Name Font Style</p>
                 </button>
               ))}
             </div>
@@ -241,9 +236,9 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
           >
             <div className="flex items-center gap-3">
               <span style={{ color: accentColor }} className="text-lg">▤</span>
-              <span className="text-white font-semibold text-sm">Chart Scanner</span>
+              <span className="font-semibold text-sm" style={{ color: '#ffffff' }}>Chart Scanner</span>
             </div>
-            <span className="text-white/60">›</span>
+            <span style={{ color: '#ffffff' }}>›</span>
           </button>
 
           {/* Back Animation */}
@@ -254,7 +249,7 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
             onToggle={() => toggleSection('back')}
             accentColor={accentColor}
           >
-            <div className="pt-3 text-white/60 text-sm">
+            <div className="pt-3 text-sm" style={{ color: '#ffffff' }}>
               Background animations coming soon.
             </div>
           </Section>
@@ -267,7 +262,7 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
             onToggle={() => toggleSection('music')}
             accentColor={accentColor}
           >
-            <div className="pt-3 text-white/60 text-sm">
+            <div className="pt-3 text-sm" style={{ color: '#ffffff' }}>
               Music coming soon.
             </div>
           </Section>
@@ -280,8 +275,8 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
             <div className="flex items-center gap-3">
               <span className="text-lg" style={{ color: accentColor }}>◉</span>
               <div>
-                <p className="text-white font-semibold text-sm">Push Notifications</p>
-                <p className="text-white/60 text-xs">Alerts on for signals & execution</p>
+                <p className="font-semibold text-sm" style={{ color: '#ffffff' }}>Push Notifications</p>
+                <p className="text-xs" style={{ color: '#ffffff' }}>Alerts on for signals & execution</p>
               </div>
             </div>
             <div
@@ -303,11 +298,11 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
             <div className="flex items-center gap-3">
               <span className="text-2xl">⬢</span>
               <div>
-                <p className="text-white/60 text-xs tracking-wider">TOKENS</p>
-                <p className="text-white font-bold text-lg">34 available</p>
+                <p className="text-xs tracking-wider" style={{ color: '#ffffff' }}>TOKENS</p>
+                <p className="font-bold text-lg" style={{ color: '#ffffff' }}>34 available</p>
               </div>
             </div>
-            <span className="text-white/60">›</span>
+            <span style={{ color: '#ffffff' }}>›</span>
           </div>
 
           {/* Live Chart */}
@@ -316,7 +311,7 @@ export default function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
             style={{ border: '1px solid rgba(255,255,255,0.08)' }}
           >
             <span style={{ color: accentColor }} className="text-lg">📈</span>
-            <span className="text-white font-semibold text-sm">Live Chart</span>
+            <span className="font-semibold text-sm" style={{ color: '#ffffff' }}>Live Chart</span>
           </button>
         </div>
 
@@ -355,11 +350,14 @@ function Section({
       >
         <div className="flex items-center gap-3">
           <span style={{ color: accentColor }} className="text-lg">{icon}</span>
-          <span className="text-white font-semibold text-sm">{title}</span>
+          <span className="font-semibold text-sm" style={{ color: '#ffffff' }}>{title}</span>
         </div>
         <span
-          className="text-white/60 transition-transform"
-          style={{ transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}
+          className="transition-transform"
+          style={{
+            color: '#ffffff',
+            transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)'
+          }}
         >
           ▼
         </span>

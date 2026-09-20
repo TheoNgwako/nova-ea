@@ -71,7 +71,7 @@ export default function PhoenixLayout({
         </div>
       </div>
 
-      <p className="text-center text-xs tracking-widest text-white mt-4">
+      <p className="text-center text-xs tracking-widest mt-4" style={{ color: '#ffffff' }}>
         Your Trading With
       </p>
       <h1
@@ -90,8 +90,8 @@ export default function PhoenixLayout({
           className="px-5 py-2 rounded-full text-xs"
           style={{ border: `1px solid ${accentColor}60`, background: `${accentColor}10` }}
         >
-          <span className="text-white">Powered By</span>{' '}
-          <span className="text-white">NOVA EA</span>
+          <span style={{ color: '#ffffff' }}>Powered By</span>{' '}
+          <span style={{ color: '#ffffff' }}>NOVA EA</span>
         </div>
       </div>
 
@@ -174,8 +174,8 @@ export default function PhoenixLayout({
             )}
           </div>
           <div className="flex-1 min-w-0">
-            <h2 className="text-sm font-bold text-white truncate">{mentorName}</h2>
-            <p className="text-[10px] text-white/70 truncate">{mentorTagline}</p>
+            <h2 className="text-sm font-bold truncate" style={{ color: '#ffffff' }}>{mentorName}</h2>
+            <p className="text-[10px] truncate" style={{ color: '#ffffff' }}>{mentorTagline}</p>
           </div>
           <span
             className="text-[10px] px-2 py-1 rounded-full"
