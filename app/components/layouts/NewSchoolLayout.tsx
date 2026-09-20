@@ -171,53 +171,7 @@ export default function NewSchoolLayout({
         </div>
       </div>
 
-      {/* Balance Stats Row */}
-      <div className="grid grid-cols-3 gap-2 mb-4">
-        <div
-          className="rounded-xl p-3 text-center"
-          style={{
-            background: 'rgba(0,0,0,0.7)',
-            border: `1px solid ${accentColor}30`,
-          }}
-        >
-          <p className="text-[9px] text-white tracking-widest">
-            BALANCE
-          </p>
-          <p className="text-base font-bold text-white">
-            10133
-          </p>
-        </div>
 
-        <div
-          className="rounded-xl p-3 text-center"
-          style={{
-            background: 'rgba(0,0,0,0.7)',
-            border: `1px solid ${accentColor}30`,
-          }}
-        >
-          <p className="text-[9px] text-white tracking-widest">
-            EQUITY
-          </p>
-          <p className="text-base font-bold text-white">
-            10134
-          </p>
-        </div>
-
-        <div
-          className="rounded-xl p-3 text-center"
-          style={{
-            background: 'rgba(0,0,0,0.7)',
-            border: `1px solid ${accentColor}30`,
-          }}
-        >
-          <p className="text-[9px] text-white tracking-widest">
-            PROFIT
-          </p>
-          <p className="text-base font-bold text-green-500">
-            +1.31
-          </p>
-        </div>
-      </div>
 
       {/* Powered By */}
       <div className="flex justify-center">

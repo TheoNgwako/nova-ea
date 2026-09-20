@@ -138,34 +138,6 @@ export default function PhantomLayout({
         </button>
       </div>
 
-      <div className="space-y-3 mb-6">
-        <div className="flex justify-between items-center py-2 border-b border-white/5">
-          <span className="text-[10px] tracking-widest text-white">
-            BALANCE
-          </span>
-          <span className="text-sm font-light text-white">
-            10133.10
-          </span>
-        </div>
-
-        <div className="flex justify-between items-center py-2 border-b border-white/5">
-          <span className="text-[10px] tracking-widest text-white">
-            EQUITY
-          </span>
-          <span className="text-sm font-light text-white">
-            10134.41
-          </span>
-        </div>
-
-        <div className="flex justify-between items-center py-2 border-b border-white/5">
-          <span className="text-[10px] tracking-widest text-white">
-            PROFIT
-          </span>
-          <span className="text-sm font-light text-green-500">
-            +1.31
-          </span>
-        </div>
-      </div>
 
       {/* Powered By */}
       <div className="flex justify-center mb-6">

@@ -173,74 +173,7 @@ export default function SniperLayout({
         </button>
       </div>
 
-      {/* Stats Table */}
-      <div
-        className="rounded-xl overflow-hidden mb-4"
-        style={{
-          border: `1px solid ${accentColor}30`,
-        }}
-      >
-        <div className="grid grid-cols-2 divide-x divide-white/5">
-          <div
-            className="p-3"
-            style={{
-              background: 'rgba(0,0,0,0.5)',
-            }}
-          >
-            <p className="text-[9px] tracking-widest text-white">
-              BALANCE
-            </p>
-            <p className="text-sm font-bold text-white mt-1">
-              10133.10
-            </p>
-          </div>
-
-          <div
-            className="p-3"
-            style={{
-              background: 'rgba(0,0,0,0.5)',
-            }}
-          >
-            <p className="text-[9px] tracking-widest text-white">
-              EQUITY
-            </p>
-            <p className="text-sm font-bold text-white mt-1">
-              10134.41
-            </p>
-          </div>
-        </div>
-
-        <div className="border-t border-white/5 grid grid-cols-2 divide-x divide-white/5">
-          <div
-            className="p-3"
-            style={{
-              background: 'rgba(0,0,0,0.5)',
-            }}
-          >
-            <p className="text-[9px] tracking-widest text-white">
-              PROFIT
-            </p>
-            <p className="text-sm font-bold text-green-500 mt-1">
-              +1.31
-            </p>
-          </div>
-
-          <div
-            className="p-3"
-            style={{
-              background: 'rgba(0,0,0,0.5)',
-            }}
-          >
-            <p className="text-[9px] tracking-widest text-white">
-              POSITIONS
-            </p>
-            <p className="text-sm font-bold text-white mt-1">
-              0
-            </p>
-          </div>
-        </div>
-      </div>
-
+     
       {/* Powered By */}
       <div className="flex justify-center">
         <div

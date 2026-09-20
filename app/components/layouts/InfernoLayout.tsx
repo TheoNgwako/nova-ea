@@ -203,38 +203,7 @@ export default function InfernoLayout({
         </div>
       </div>
 
-      {/* Balance Cards */}
-      <div className="grid grid-cols-2 gap-3">
-        <div
-          className="rounded-xl p-3"
-          style={{
-            background: 'rgba(0,0,0,0.7)',
-            border: `1px solid ${accentColor}30`,
-          }}
-        >
-          <p className="text-[10px] text-white tracking-widest">
-            BALANCE
-          </p>
-          <p className="text-lg font-bold text-white">
-            10133.10
-          </p>
-        </div>
-
-        <div
-          className="rounded-xl p-3"
-          style={{
-            background: 'rgba(0,0,0,0.7)',
-            border: `1px solid ${accentColor}30`,
-          }}
-        >
-          <p className="text-[10px] text-white tracking-widest">
-            EQUITY
-          </p>
-          <p className="text-lg font-bold text-white">
-            10134.41
-          </p>
-        </div>
-      </div>
+ 
     </>
   );
 }

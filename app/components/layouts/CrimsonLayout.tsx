@@ -279,42 +279,6 @@ export default function CrimsonLayout({
           </span>
         </div>
       </div>
-
-      {/* Balance / Equity / Profit */}
-      <div className="grid grid-cols-3 gap-2">
-        <div
-          className="rounded-lg p-2 text-center"
-          style={{
-            background: 'rgba(0,0,0,0.7)',
-            border: `1px solid ${accentColor}30`,
-          }}
-        >
-          <p className="text-[9px] text-white">BALANCE</p>
-          <p className="text-sm font-bold text-white">10133</p>
-        </div>
-
-        <div
-          className="rounded-lg p-2 text-center"
-          style={{
-            background: 'rgba(0,0,0,0.7)',
-            border: `1px solid ${accentColor}30`,
-          }}
-        >
-          <p className="text-[9px] text-white">EQUITY</p>
-          <p className="text-sm font-bold text-white">10134</p>
-        </div>
-
-        <div
-          className="rounded-lg p-2 text-center"
-          style={{
-            background: 'rgba(0,0,0,0.7)',
-            border: `1px solid ${accentColor}30`,
-          }}
-        >
-          <p className="text-[9px] text-white">PROFIT</p>
-          <p className="text-sm font-bold text-green-500">+1.31</p>
-        </div>
-      </div>
     </>
   );
 }

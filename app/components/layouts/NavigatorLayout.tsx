@@ -220,53 +220,7 @@ export default function NavigatorLayout({
         </button>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-3 gap-2">
-        <div
-          className="rounded-xl p-2.5 text-center"
-          style={{
-            background: 'rgba(0,0,0,0.5)',
-            border: `1px solid ${accentColor}20`,
-          }}
-        >
-          <p className="text-[9px] tracking-widest text-white">
-            BALANCE
-          </p>
-          <p className="text-sm font-bold text-white mt-0.5">
-            10133
-          </p>
-        </div>
 
-        <div
-          className="rounded-xl p-2.5 text-center"
-          style={{
-            background: 'rgba(0,0,0,0.5)',
-            border: `1px solid ${accentColor}20`,
-          }}
-        >
-          <p className="text-[9px] tracking-widest text-white">
-            EQUITY
-          </p>
-          <p className="text-sm font-bold text-white mt-0.5">
-            10134
-          </p>
-        </div>
-
-        <div
-          className="rounded-xl p-2.5 text-center"
-          style={{
-            background: 'rgba(0,0,0,0.5)',
-            border: `1px solid ${accentColor}20`,
-          }}
-        >
-          <p className="text-[9px] tracking-widest text-white">
-            PROFIT
-          </p>
-          <p className="text-sm font-bold text-green-500 mt-0.5">
-            +1.31
-          </p>
-        </div>
-      </div>
 
       {/* Powered By Footer */}
       <div className="flex justify-center mt-4">

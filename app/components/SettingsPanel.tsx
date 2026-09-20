@@ -1,8 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { signOut } from 'firebase/auth';
+
 import { useTheme } from '../context/ThemeContext';
 import AccentColorWheel from './AccentColorWheel';
+import { auth } from '../lib/firebase';
+import {
+  getNotificationStatus,
+  requestNotificationPermission,
+} from '../lib/notifications';
 
 const LAYOUTS = [
   { id: 'default', name: 'Default', desc: 'Default 2-column layout' },
@@ -50,6 +57,24 @@ type SettingsPanelProps = {
   onClose: () => void;
 };
 
+type NotificationStatus =
+  | 'granted'
+  | 'denied'
+  | 'default'
+  | 'unsupported';
+
+type Notif = {
+  id: string;
+  symbol: string;
+  action: 'BUY' | 'SELL';
+  entry: string;
+  tp: string;
+  sl: string;
+  confidence: number;
+  rsi: number;
+  timestamp: string;
+};
+
 const WHITE_TEXT: React.CSSProperties = {
   color: '#ffffff',
   WebkitTextFillColor: '#ffffff',
@@ -71,8 +96,169 @@ export default function SettingsPanel({
 
   const [openSection, setOpenSection] = useState<string | null>(null);
 
+  const [email, setEmail] = useState('');
+  const [notifs, setNotifs] = useState<Notif[]>([]);
+  const [notifStatus, setNotifStatus] =
+    useState<NotificationStatus>('default');
+
+  const [notifLoading, setNotifLoading] = useState(false);
+  const [logoutLoading, setLogoutLoading] = useState(false);
+
   const toggleSection = (section: string) => {
     setOpenSection(openSection === section ? null : section);
+  };
+
+  const loadSignalHistory = () => {
+    try {
+      const history = JSON.parse(
+        localStorage.getItem('notif_history') || '[]'
+      );
+
+      if (!Array.isArray(history)) {
+        setNotifs([]);
+        return;
+      }
+
+      const sorted = [...history].sort((a, b) => {
+        const aTime = new Date(a.timestamp || 0).getTime();
+        const bTime = new Date(b.timestamp || 0).getTime();
+
+        return bTime - aTime;
+      });
+
+      setNotifs(sorted.slice(0, 10));
+    } catch (error) {
+      console.error('Failed to load notification history:', error);
+      setNotifs([]);
+    }
+  };
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    try {
+      const studentData = JSON.parse(
+        localStorage.getItem('student_demo') || '{}'
+      );
+
+      setEmail(studentData.email || auth.currentUser?.email || '');
+    } catch {
+      setEmail(auth.currentUser?.email || '');
+    }
+
+    setNotifStatus(getNotificationStatus());
+    loadSignalHistory();
+  }, [isOpen]);
+
+  const handleEnableNotifications = async () => {
+    setNotifLoading(true);
+
+    try {
+      const token = await requestNotificationPermission();
+
+      setNotifStatus(getNotificationStatus());
+
+      if (!token && getNotificationStatus() !== 'granted') {
+        console.log('Notification permission was not enabled.');
+      }
+    } catch (error) {
+      console.error('Failed to enable notifications:', error);
+      setNotifStatus(getNotificationStatus());
+    } finally {
+      setNotifLoading(false);
+    }
+  };
+
+  const deleteNotif = (id: string) => {
+    try {
+      const history = JSON.parse(
+        localStorage.getItem('notif_history') || '[]'
+      );
+
+      const updated = Array.isArray(history)
+        ? history.filter((notif: Notif) => notif.id !== id)
+        : [];
+
+      localStorage.setItem(
+        'notif_history',
+        JSON.stringify(updated)
+      );
+
+      loadSignalHistory();
+    } catch (error) {
+      console.error('Failed to delete notification:', error);
+    }
+  };
+
+  const clearAll = () => {
+    if (!window.confirm('Delete all notifications?')) return;
+
+    localStorage.setItem('notif_history', '[]');
+    setNotifs([]);
+  };
+
+  const handleLogout = async () => {
+    if (logoutLoading) return;
+
+    setLogoutLoading(true);
+
+    localStorage.removeItem('student_logged_in');
+    localStorage.removeItem('student_demo');
+    localStorage.removeItem('fcm_token');
+
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error('Firebase logout error:', error);
+    }
+
+    window.location.href = '/student-entry';
+  };
+
+  const formatTime = (timestamp: string) => {
+    try {
+      const date = new Date(timestamp);
+
+      if (Number.isNaN(date.getTime())) {
+        return timestamp;
+      }
+
+      return date.toLocaleString();
+    } catch {
+      return timestamp;
+    }
+  };
+
+  const getNotificationLabel = () => {
+    switch (notifStatus) {
+      case 'granted':
+        return 'Enabled';
+
+      case 'denied':
+        return 'Blocked';
+
+      case 'unsupported':
+        return 'Unsupported';
+
+      default:
+        return 'Not Enabled';
+    }
+  };
+
+  const getNotificationDescription = () => {
+    switch (notifStatus) {
+      case 'granted':
+        return 'Signal & execution alerts are enabled';
+
+      case 'denied':
+        return 'Notifications are blocked in your browser';
+
+      case 'unsupported':
+        return 'Notifications are not supported on this device';
+
+      default:
+        return 'Enable alerts for signals & execution';
+    }
   };
 
   if (!isOpen) return null;
@@ -89,7 +275,8 @@ export default function SettingsPanel({
       <div
         className="fixed top-0 right-0 h-full w-full max-w-md z-[101] overflow-y-auto"
         style={{
-          background: 'linear-gradient(180deg, #0a0a0a 0%, #000000 100%)',
+          background:
+            'linear-gradient(180deg, #0a0a0a 0%, #000000 100%)',
           color: '#ffffff',
           WebkitTextFillColor: '#ffffff',
         }}
@@ -134,6 +321,59 @@ export default function SettingsPanel({
             WebkitTextFillColor: '#ffffff',
           }}
         >
+          {/* Account */}
+          <Section
+            title="Account"
+            icon="●"
+            isOpen={openSection === 'account'}
+            onToggle={() => toggleSection('account')}
+            accentColor={accentColor}
+          >
+            <div className="pt-2">
+              <div
+                className="rounded-2xl bg-white/5 px-4 py-4"
+                style={{
+                  border: '1px solid rgba(255,255,255,0.08)',
+                }}
+              >
+                <div className="flex items-start justify-between gap-4 py-2 border-b border-white/5">
+                  <span
+                    className="text-xs flex-shrink-0"
+                    style={WHITE_TEXT}
+                  >
+                    Email
+                  </span>
+
+                  <span
+                    className="text-xs font-semibold text-right break-all"
+                    style={WHITE_TEXT}
+                  >
+                    {email || 'Student'}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between gap-4 py-3">
+                  <span
+                    className="text-xs"
+                    style={WHITE_TEXT}
+                  >
+                    Plan
+                  </span>
+
+                  <span
+                    className="text-xs font-bold"
+                    style={{
+                      color: '#22c55e',
+                      WebkitTextFillColor: '#22c55e',
+                    }}
+                  >
+                    ● Active
+                  </span>
+                </div>
+              </div>
+            </div>
+          </Section>
+
           {/* Select Main Interface */}
           <Section
             title="Select Main Interface"
@@ -311,6 +551,305 @@ export default function SettingsPanel({
             </div>
           </Section>
 
+          {/* Notifications */}
+          <Section
+            title="Notifications"
+            icon="◉"
+            isOpen={openSection === 'notifications'}
+            onToggle={() => toggleSection('notifications')}
+            accentColor={accentColor}
+          >
+            <div className="space-y-3 pt-2">
+              {/* Notification permission */}
+              <div
+                className="rounded-2xl bg-white/5 p-4"
+                style={{
+                  border: '1px solid rgba(255,255,255,0.08)',
+                }}
+              >
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <p
+                      className="font-bold text-sm"
+                      style={WHITE_TEXT}
+                    >
+                      Push Notifications
+                    </p>
+
+                    <p
+                      className="text-xs mt-1"
+                      style={WHITE_TEXT}
+                    >
+                      {getNotificationDescription()}
+                    </p>
+                  </div>
+
+                  <span
+                    className="text-xs font-bold flex-shrink-0"
+                    style={{
+                      color:
+                        notifStatus === 'granted'
+                          ? '#22c55e'
+                          : notifStatus === 'denied'
+                            ? '#ef4444'
+                            : accentColor,
+                      WebkitTextFillColor:
+                        notifStatus === 'granted'
+                          ? '#22c55e'
+                          : notifStatus === 'denied'
+                            ? '#ef4444'
+                            : accentColor,
+                    }}
+                  >
+                    {getNotificationLabel()}
+                  </span>
+                </div>
+
+                {notifStatus === 'default' && (
+                  <button
+                    onClick={handleEnableNotifications}
+                    disabled={notifLoading}
+                    className="w-full mt-4 py-3 rounded-xl font-bold text-sm transition disabled:opacity-50"
+                    style={{
+                      background: accentColor,
+                      color: '#000000',
+                      WebkitTextFillColor: '#000000',
+                      boxShadow: `0 0 20px ${accentColor}40`,
+                    }}
+                  >
+                    {notifLoading
+                      ? 'Enabling...'
+                      : 'Enable Notifications'}
+                  </button>
+                )}
+
+                {notifStatus === 'denied' && (
+                  <p
+                    className="text-xs mt-3"
+                    style={WHITE_TEXT}
+                  >
+                    Notifications are blocked. Allow notifications
+                    for NOVA EA in your browser settings, then
+                    reopen this panel.
+                  </p>
+                )}
+
+                {notifStatus === 'unsupported' && (
+                  <p
+                    className="text-xs mt-3"
+                    style={WHITE_TEXT}
+                  >
+                    Push notifications are not supported by this
+                    browser or device.
+                  </p>
+                )}
+              </div>
+
+              {/* Signal history heading */}
+              <div className="flex items-center justify-between px-1 pt-2">
+                <div>
+                  <p
+                    className="font-bold text-sm"
+                    style={WHITE_TEXT}
+                  >
+                    Signal History
+                  </p>
+
+                  <p
+                    className="text-xs mt-0.5"
+                    style={WHITE_TEXT}
+                  >
+                    Your latest 10 signals
+                  </p>
+                </div>
+
+                {notifs.length > 0 && (
+                  <button
+                    onClick={clearAll}
+                    className="text-xs font-bold px-3 py-2 rounded-xl"
+                    style={{
+                      border: '1px solid rgba(239,68,68,0.5)',
+                      color: '#ef4444',
+                      WebkitTextFillColor: '#ef4444',
+                    }}
+                  >
+                    Clear All
+                  </button>
+                )}
+              </div>
+
+              {/* No signals */}
+              {notifs.length === 0 ? (
+                <div
+                  className="rounded-2xl bg-white/5 p-6 text-center"
+                  style={{
+                    border: '1px solid rgba(255,255,255,0.08)',
+                  }}
+                >
+                  <p
+                    className="text-sm font-semibold"
+                    style={WHITE_TEXT}
+                  >
+                    No notifications yet
+                  </p>
+
+                  <p
+                    className="text-xs mt-2"
+                    style={WHITE_TEXT}
+                  >
+                    Signals will appear here when they fire.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {notifs.map((notif) => (
+                    <div
+                      key={notif.id}
+                      className="bg-white/5 rounded-2xl p-4 relative"
+                      style={{
+                        border:
+                          notif.action === 'BUY'
+                            ? '1px solid rgba(34,197,94,0.35)'
+                            : '1px solid rgba(239,68,68,0.35)',
+                      }}
+                    >
+                      <div className="flex items-start justify-between gap-3 mb-2">
+                        <div>
+                          <span
+                            className="font-bold text-sm"
+                            style={{
+                              color:
+                                notif.action === 'BUY'
+                                  ? '#22c55e'
+                                  : '#ef4444',
+                              WebkitTextFillColor:
+                                notif.action === 'BUY'
+                                  ? '#22c55e'
+                                  : '#ef4444',
+                            }}
+                          >
+                            {notif.action} {notif.symbol}
+                          </span>
+
+                          <p
+                            className="text-[10px] mt-1"
+                            style={WHITE_TEXT}
+                          >
+                            {formatTime(notif.timestamp)}
+                          </p>
+                        </div>
+
+                        <button
+                          onClick={() => deleteNotif(notif.id)}
+                          className="w-7 h-7 rounded-full flex items-center justify-center text-sm transition"
+                          style={{
+                            border:
+                              '1px solid rgba(255,255,255,0.1)',
+                            color: '#ffffff',
+                            WebkitTextFillColor: '#ffffff',
+                          }}
+                          aria-label="Delete signal"
+                        >
+                          ✕
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-2 mt-3">
+                        <div
+                          className="rounded-xl bg-black/30 p-2"
+                          style={{
+                            border:
+                              '1px solid rgba(255,255,255,0.05)',
+                          }}
+                        >
+                          <p
+                            className="text-[9px]"
+                            style={WHITE_TEXT}
+                          >
+                            ENTRY
+                          </p>
+
+                          <p
+                            className="text-xs font-mono font-bold mt-1"
+                            style={WHITE_TEXT}
+                          >
+                            {notif.entry}
+                          </p>
+                        </div>
+
+                        <div
+                          className="rounded-xl bg-black/30 p-2"
+                          style={{
+                            border:
+                              '1px solid rgba(255,255,255,0.05)',
+                          }}
+                        >
+                          <p
+                            className="text-[9px]"
+                            style={WHITE_TEXT}
+                          >
+                            TP
+                          </p>
+
+                          <p
+                            className="text-xs font-mono font-bold mt-1"
+                            style={{
+                              color: '#22c55e',
+                              WebkitTextFillColor: '#22c55e',
+                            }}
+                          >
+                            {notif.tp}
+                          </p>
+                        </div>
+
+                        <div
+                          className="rounded-xl bg-black/30 p-2"
+                          style={{
+                            border:
+                              '1px solid rgba(255,255,255,0.05)',
+                          }}
+                        >
+                          <p
+                            className="text-[9px]"
+                            style={WHITE_TEXT}
+                          >
+                            SL
+                          </p>
+
+                          <p
+                            className="text-xs font-mono font-bold mt-1"
+                            style={{
+                              color: '#ef4444',
+                              WebkitTextFillColor: '#ef4444',
+                            }}
+                          >
+                            {notif.sl}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex justify-between items-center mt-3 pt-3 border-t border-white/5">
+                        <span
+                          className="text-[10px]"
+                          style={WHITE_TEXT}
+                        >
+                          Confidence
+                        </span>
+
+                        <span
+                          className="text-xs font-bold"
+                          style={WHITE_TEXT}
+                        >
+                          {notif.confidence}%
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </Section>
+
           {/* Chart Scanner */}
           <button
             className="w-full flex items-center justify-between px-5 py-4 rounded-3xl bg-white/5"
@@ -374,51 +913,6 @@ export default function SettingsPanel({
             </div>
           </Section>
 
-          {/* Push Notifications */}
-          <div
-            className="w-full flex items-center justify-between px-5 py-4 rounded-3xl bg-white/5"
-            style={{
-              border: '1px solid rgba(255,255,255,0.08)',
-              color: '#ffffff',
-              WebkitTextFillColor: '#ffffff',
-            }}
-          >
-            <div className="flex items-center gap-3">
-              <span
-                className="text-lg"
-                style={{
-                  color: accentColor,
-                  WebkitTextFillColor: accentColor,
-                }}
-              >
-                ◉
-              </span>
-
-              <div>
-                <p
-                  className="font-semibold text-sm"
-                  style={WHITE_TEXT}
-                >
-                  Push Notifications
-                </p>
-
-                <p
-                  className="text-xs"
-                  style={WHITE_TEXT}
-                >
-                  Alerts on for signals & execution
-                </p>
-              </div>
-            </div>
-
-            <div
-              className="w-12 h-6 rounded-full relative transition"
-              style={{ background: accentColor }}
-            >
-              <div className="w-5 h-5 bg-white rounded-full absolute top-0.5 right-0.5" />
-            </div>
-          </div>
-
           {/* Tokens */}
           <div
             className="w-full flex items-center justify-between px-5 py-4 rounded-3xl"
@@ -481,6 +975,30 @@ export default function SettingsPanel({
               style={WHITE_TEXT}
             >
               Live Chart
+            </span>
+          </button>
+
+          {/* Logout */}
+          <button
+            onClick={handleLogout}
+            disabled={logoutLoading}
+            className="w-full flex items-center justify-center gap-3 px-5 py-4 rounded-3xl transition disabled:opacity-50"
+            style={{
+              background: 'rgba(239,68,68,0.08)',
+              border: '1px solid rgba(239,68,68,0.5)',
+              color: '#ef4444',
+              WebkitTextFillColor: '#ef4444',
+              boxShadow: '0 0 20px rgba(239,68,68,0.08)',
+            }}
+          >
+            <span
+              className="font-bold text-sm"
+              style={{
+                color: '#ef4444',
+                WebkitTextFillColor: '#ef4444',
+              }}
+            >
+              {logoutLoading ? 'Logging out...' : 'Logout'}
             </span>
           </button>
         </div>
