@@ -8,6 +8,9 @@ import { db } from '../lib/firebase';
 import { useTheme } from '../context/ThemeContext';
 import { useSignal } from '../lib/SignalContext';
 import SettingsPanel from '../components/SettingsPanel';
+import BackgroundAnimation, {
+  type BackgroundAnimationType,
+} from '../components/BackgroundAnimation';
 import FloatingTerminal from '../components/FloatingTerminal';
 import SmartScreen from '../components/SmartScreen';
 import PhoenixLayout from '../components/layouts/PhoenixLayout';
@@ -76,6 +79,8 @@ export default function StudentDashboard() {
   const [terminalOpen, setTerminalOpen] = useState(false);
   const [notifStatus, setNotifStatus] = useState<'granted' | 'denied' | 'default' | 'unsupported'>('default');
   const [notifLoading, setNotifLoading] = useState(false);
+  const [backgroundAnimation, setBackgroundAnimation] =
+    useState<BackgroundAnimationType>('none');
 
   const getFontFamily = () => {
     const fonts: Record<string, string> = {
@@ -104,6 +109,42 @@ export default function StudentDashboard() {
 
   useEffect(() => {
     setNotifStatus(getNotificationStatus());
+  }, []);
+
+  useEffect(() => {
+    const loadAnimation = () => {
+      const saved =
+        (localStorage.getItem(
+          'nova_background_animation'
+        ) as BackgroundAnimationType | null) || 'none';
+
+      setBackgroundAnimation(saved);
+    };
+
+    loadAnimation();
+
+    const handleAnimationChange = (event: Event) => {
+      const customEvent =
+        event as CustomEvent<BackgroundAnimationType>;
+
+      setBackgroundAnimation(customEvent.detail);
+    };
+
+    window.addEventListener(
+      'nova-background-animation-change',
+      handleAnimationChange
+    );
+
+    window.addEventListener('storage', loadAnimation);
+
+    return () => {
+      window.removeEventListener(
+        'nova-background-animation-change',
+        handleAnimationChange
+      );
+
+      window.removeEventListener('storage', loadAnimation);
+    };
   }, []);
 
   useEffect(() => {
@@ -194,23 +235,38 @@ export default function StudentDashboard() {
 
   return (
     <div className="min-h-screen text-white relative">
-      {mentorVideo ? (
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          preload="auto"
-          className="fixed inset-0 w-full h-full object-cover z-0"
-          src={mentorVideo}
-        />
-      ) : mentorImage ? (
-        <div className="fixed inset-0 z-0 bg-cover bg-center" style={{ backgroundImage: `url(${mentorImage})` }} />
-      ) : (
-        <div className="fixed inset-0 z-0 bg-gradient-to-br from-red-900/40 via-black to-black" />
-      )}
+      {/* Background */}
+      {backgroundAnimation === 'none' ? (
+        <>
+          {mentorImage ? (
+            <div
+              className="fixed inset-0 z-0 bg-cover bg-center"
+              style={{
+                backgroundImage: `url(${mentorImage})`,
+              }}
+            />
+          ) : (
+            <div
+              className="fixed inset-0 z-0"
+              style={{
+                background: `radial-gradient(circle at 50% 30%, ${accentColor}30 0%, #000000 65%)`,
+              }}
+            />
+          )}
 
-      <div className="fixed inset-0 bg-black/75 z-0" />
+          <div className="fixed inset-0 bg-black/75 z-0" />
+        </>
+      ) : (
+        <>
+          <BackgroundAnimation
+            type={backgroundAnimation}
+            accentColor={accentColor}
+            mentorImage={mentorImage}
+            mentorVideo={mentorVideo}
+          />
+
+        </>
+      )}
 
       <div className="relative z-10">
         <header
@@ -264,13 +320,13 @@ export default function StudentDashboard() {
           style={{ background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)', borderTop: `1px solid ${accentColor}30` }}
         >
           <button onClick={() => setSmartOpen(true)} className="flex flex-col items-center py-2 flex-1">
-            <SmartIcon color="rgba(255,255,255,0.4)" />
-            <span className="text-[9px] mt-1 tracking-wider text-white/40">SMART</span>
+            <SmartIcon color="#ffffff" />
+            <span className="text-[9px] mt-1 tracking-wider" style={{ color: '#ffffff', WebkitTextFillColor: '#ffffff' }}>SMART</span>
           </button>
 
           <Link href="/student/metatrader" className="flex flex-col items-center py-2 flex-1">
-            <MT5Icon color="rgba(255,255,255,0.4)" />
-            <span className="text-[9px] mt-1 tracking-wider text-white/40">MT5</span>
+            <MT5Icon color="#ffffff" />
+            <span className="text-[9px] mt-1 tracking-wider" style={{ color: '#ffffff', WebkitTextFillColor: '#ffffff' }}>MT5</span>
           </Link>
 
           <Link href="/student" className="flex flex-col items-center flex-1 relative">
@@ -280,17 +336,17 @@ export default function StudentDashboard() {
             >
               <HomeIcon color={accentColor} />
             </div>
-            <span className="text-[9px] tracking-wider mt-0.5" style={{ color: accentColor }}>HOME</span>
+            <span className="text-[9px] tracking-wider mt-0.5" style={{ color: '#ffffff', WebkitTextFillColor: '#ffffff' }}>HOME</span>
           </Link>
 
           <Link href="/student" className="flex flex-col items-center py-2 flex-1">
-            <ScannerIcon color="rgba(255,255,255,0.4)" />
-            <span className="text-[9px] mt-1 tracking-wider text-white/40">SCANNER</span>
+            <ScannerIcon color="#ffffff" />
+            <span className="text-[9px] mt-1 tracking-wider" style={{ color: '#ffffff', WebkitTextFillColor: '#ffffff' }}>SCANNER</span>
           </Link>
 
           <button onClick={() => setSettingsOpen(true)} className="flex flex-col items-center py-2 flex-1">
-            <SettingsIcon color="rgba(255,255,255,0.4)" />
-            <span className="text-[9px] mt-1 tracking-wider text-white/40">SETTINGS</span>
+            <SettingsIcon color="#ffffff" />
+            <span className="text-[9px] mt-1 tracking-wider" style={{ color: '#ffffff', WebkitTextFillColor: '#ffffff' }}>SETTINGS</span>
           </button>
         </div>
       </div>

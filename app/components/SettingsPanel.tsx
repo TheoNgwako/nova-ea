@@ -10,7 +10,7 @@ import {
   getNotificationStatus,
   requestNotificationPermission,
 } from '../lib/notifications';
-
+import type { BackgroundAnimationType } from './BackgroundAnimation';
 const LAYOUTS = [
   { id: 'default', name: 'Default', desc: 'Default 2-column layout' },
   { id: 'matrix', name: 'Matrix', desc: '3 buttons in row layout' },
@@ -103,9 +103,24 @@ export default function SettingsPanel({
 
   const [notifLoading, setNotifLoading] = useState(false);
   const [logoutLoading, setLogoutLoading] = useState(false);
+  const [backgroundAnimation, setBackgroundAnimation] =
+    useState<BackgroundAnimationType>('none');
 
   const toggleSection = (section: string) => {
     setOpenSection(openSection === section ? null : section);
+  };
+
+  const selectBackgroundAnimation = (
+    animation: BackgroundAnimationType
+  ) => {
+    setBackgroundAnimation(animation);
+    localStorage.setItem('nova_background_animation', animation);
+
+    window.dispatchEvent(
+      new CustomEvent('nova-background-animation-change', {
+        detail: animation,
+      })
+    );
   };
 
   const loadSignalHistory = () => {
@@ -148,6 +163,13 @@ export default function SettingsPanel({
 
     setNotifStatus(getNotificationStatus());
     loadSignalHistory();
+
+    const savedBackground =
+      (localStorage.getItem(
+        'nova_background_animation'
+      ) as BackgroundAnimationType | null) || 'none';
+
+    setBackgroundAnimation(savedBackground);
   }, [isOpen]);
 
   const handleEnableNotifications = async () => {
@@ -889,11 +911,145 @@ export default function SettingsPanel({
             onToggle={() => toggleSection('back')}
             accentColor={accentColor}
           >
-            <div
-              className="pt-3 text-sm"
-              style={WHITE_TEXT}
-            >
-              Background animations coming soon.
+            <div className="space-y-2 pt-2">
+              {[
+                {
+                  id: 'none',
+                  name: 'None',
+                  desc: 'No built-in background animation',
+                  icon: '○',
+                },
+                {
+                  id: 'profit-rain',
+                  name: 'Profit Rain',
+                  desc: 'Animated profit symbols falling behind the EA',
+                  icon: '💰',
+                },
+                {
+                  id: 'colour-matrix',
+                  name: 'Colour Matrix',
+                  desc: 'Pulsing matrix effects using your selected colour',
+                  icon: '◈',
+                },
+                {
+                  id: 'hackers',
+                  name: 'Hackers',
+                  desc: 'Animated digital code streams',
+                  icon: '⌨',
+                },
+                {
+                  id: 'candle-chart',
+                  name: 'Candle Chart',
+                  desc: 'Moving candlesticks using your selected colour',
+                  icon: '📈',
+                },
+                {
+                  id: 'forex-ticker',
+                  name: 'Forex Ticker',
+                  desc: 'Moving forex pairs, prices and pip values',
+                  icon: '↔',
+                },
+                {
+                  id: 'market-pulse',
+                  name: 'Market Pulse',
+                  desc: 'Animated forex market waves and pair pulses',
+                  icon: '〽',
+                },
+                {
+                  id: 'pip-storm',
+                  name: 'Pip Storm',
+                  desc: 'Floating pips, trade calls and profit values',
+                  icon: '✦',
+                },
+                {
+                  id: 'robot-video',
+                  name: 'Robot Video',
+                  desc: 'Use the video uploaded by your mentor',
+                  icon: '▶',
+                },
+              ].map((animation) => {
+                const selected = backgroundAnimation === animation.id;
+
+                return (
+                  <button
+                    key={animation.id}
+                    onClick={() =>
+                      selectBackgroundAnimation(
+                        animation.id as BackgroundAnimationType
+                      )
+                    }
+                    className="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-2xl transition-all"
+                    style={{
+                      background: selected
+                        ? `${accentColor}18`
+                        : 'rgba(255,255,255,0.05)',
+                      border: selected
+                        ? `1px solid ${accentColor}`
+                        : '1px solid rgba(255,255,255,0.08)',
+                      boxShadow: selected
+                        ? `0 0 18px ${accentColor}30`
+                        : undefined,
+                      color: '#ffffff',
+                      WebkitTextFillColor: '#ffffff',
+                    }}
+                  >
+                    <div className="flex items-center gap-3 text-left">
+                      <span
+                        className="text-xl w-7 text-center"
+                        style={{
+                          WebkitTextFillColor: 'initial',
+                        }}
+                      >
+                        {animation.icon}
+                      </span>
+
+                      <div>
+                        <p
+                          className="font-bold text-sm"
+                          style={WHITE_TEXT}
+                        >
+                          {animation.name}
+                        </p>
+
+                        <p
+                          className="text-[11px] mt-0.5"
+                          style={WHITE_TEXT}
+                        >
+                          {animation.desc}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div
+                      className="w-11 h-6 rounded-full relative flex-shrink-0 transition"
+                      style={{
+                        background: selected
+                          ? accentColor
+                          : 'rgba(255,255,255,0.15)',
+                        boxShadow: selected
+                          ? `0 0 12px ${accentColor}70`
+                          : undefined,
+                      }}
+                    >
+                      <div
+                        className="absolute top-0.5 w-5 h-5 bg-white rounded-full transition-all"
+                        style={{
+                          left: selected ? '22px' : '2px',
+                        }}
+                      />
+                    </div>
+                  </button>
+                );
+              })}
+
+              <p
+                className="text-[10px] px-2 pt-1"
+                style={WHITE_TEXT}
+              >
+                One background can be active at a time. Built-in animations
+                automatically use your selected NOVA EA colour. Your mentor
+                image stays behind every built-in animation except Candle Chart.
+              </p>
             </div>
           </Section>
 
