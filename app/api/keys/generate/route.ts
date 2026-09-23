@@ -1,80 +1,482 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { initializeApp, getApps } from 'firebase/app';
-import { getFirestore, doc, setDoc } from 'firebase/firestore';
+import {
+  NextRequest,
+  NextResponse,
+} from 'next/server';
 
-const firebaseConfig = {
-  apiKey: "AIzaSyBbDZlOIXKBXZeHZ8C4ncac5BL2FOmNT_0",
-  authDomain: "nova-ea-a0049.firebaseapp.com",
-  projectId: "nova-ea-a0049",
-  storageBucket: "nova-ea-a0049.firebasestorage.app",
-  messagingSenderId: "498383564796",
-  appId: "1:498383564796:web:8991af256de05e2bd64c79",
-};
+import {
+  FieldValue,
+  Timestamp,
+} from 'firebase-admin/firestore';
 
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-const db = getFirestore(app);
+import { randomBytes } from 'crypto';
+
+import {
+  adminAuth,
+  adminDb,
+} from '../../../lib/firebase-admin';
+
+const VALID_PLANS = [
+  'lifetime',
+  '1year',
+  '6months',
+  '1month',
+  '1week',
+] as const;
+
+type Plan =
+  (typeof VALID_PLANS)[number];
+
+// =========================
+// GENERATE SECURE KEY
+// =========================
 
 function generateLicenseKey(): string {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  const chars =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+
+  const bytes = randomBytes(15);
+
   let key = '';
+
   for (let i = 0; i < 15; i++) {
-    key += chars.charAt(Math.floor(Math.random() * chars.length));
+    key +=
+      chars[
+        bytes[i] % chars.length
+      ];
   }
+
   return key;
 }
 
-export async function POST(req: NextRequest) {
+// =========================
+// CALCULATE EXPIRY
+// =========================
+
+function calculateExpiry(
+  plan: Plan
+): Timestamp | null {
+  if (plan === 'lifetime') {
+    return null;
+  }
+
+  const expiry = new Date();
+
+  switch (plan) {
+    case '1week':
+      expiry.setDate(
+        expiry.getDate() + 7
+      );
+      break;
+
+    case '1month':
+      expiry.setMonth(
+        expiry.getMonth() + 1
+      );
+      break;
+
+    case '6months':
+      expiry.setMonth(
+        expiry.getMonth() + 6
+      );
+      break;
+
+    case '1year':
+      expiry.setFullYear(
+        expiry.getFullYear() + 1
+      );
+      break;
+  }
+
+  return Timestamp.fromDate(expiry);
+}
+
+// =========================
+// AUTHENTICATE MENTOR
+// =========================
+
+async function getAuthenticatedMentor(
+  req: NextRequest
+) {
+  const authorization =
+    req.headers.get('authorization');
+
+  if (
+    !authorization ||
+    !authorization.startsWith(
+      'Bearer '
+    )
+  ) {
+    throw new Error(
+      'UNAUTHORIZED'
+    );
+  }
+
+  const token =
+    authorization.substring(7);
+
+  if (!token) {
+    throw new Error(
+      'UNAUTHORIZED'
+    );
+  }
+
+  let decodedToken;
+
   try {
-    const { mentorEmail, studentEmail, studentName, plan, mentorId } = await req.json();
+    decodedToken =
+      await adminAuth.verifyIdToken(
+        token
+      );
+  } catch {
+    throw new Error(
+      'UNAUTHORIZED'
+    );
+  }
 
-    console.log('📝 Generate request:', { mentorEmail, studentEmail, mentorId });
+  const mentorRef =
+    adminDb
+      .collection('mentors')
+      .doc(decodedToken.uid);
 
-    if (!mentorEmail || !studentEmail || !mentorId) {
+  const mentorDoc =
+    await mentorRef.get();
+
+  if (!mentorDoc.exists) {
+    throw new Error(
+      'MENTOR_NOT_FOUND'
+    );
+  }
+
+  const mentor =
+    mentorDoc.data() || {};
+
+  const mentorId =
+    typeof mentor.mentorId ===
+    'string'
+      ? mentor.mentorId.trim()
+      : '';
+
+  if (!mentorId) {
+    throw new Error(
+      'MENTOR_ID_MISSING'
+    );
+  }
+
+  return {
+    uid: decodedToken.uid,
+
+    email:
+      decodedToken.email
+        ?.trim()
+        .toLowerCase() || '',
+
+    mentorId,
+  };
+}
+
+// =========================
+// GENERATE LICENSE
+// =========================
+
+export async function POST(
+  req: NextRequest
+) {
+  try {
+    const mentor =
+      await getAuthenticatedMentor(
+        req
+      );
+
+    const body =
+      await req.json();
+
+    const studentEmail =
+      typeof body.studentEmail ===
+      'string'
+        ? body.studentEmail
+            .trim()
+            .toLowerCase()
+        : '';
+
+    const studentName =
+      typeof body.studentName ===
+      'string'
+        ? body.studentName.trim()
+        : '';
+
+    const requestedPlan =
+      typeof body.plan === 'string'
+        ? body.plan
+        : 'lifetime';
+
+    if (!studentEmail) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
+        {
+          error:
+            'Student email is required',
+        },
+        {
+          status: 400,
+        }
       );
     }
 
-    const key = generateLicenseKey();
+    if (
+      !VALID_PLANS.includes(
+        requestedPlan as Plan
+      )
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            'Invalid license plan',
+        },
+        {
+          status: 400,
+        }
+      );
+    }
 
-    // Save key
-    await setDoc(doc(db, 'keys', key), {
-      key,
-      mentorId,
-      mentorEmail,
-      studentEmail,
-      studentName: studentName || '',
-      plan: plan || 'lifetime',
-      used: false,
-      createdAt: new Date().toISOString(),
-    });
+    const plan =
+      requestedPlan as Plan;
 
-    // Save student record
-    await setDoc(doc(db, 'students', studentEmail), {
-      email: studentEmail,
-      name: studentName || '',
-      mentorId,
-      plan: plan || 'lifetime',
-      key,
-      keyUsed: false,
-      paid: true,
-      connected: false,
-      createdAt: new Date().toISOString(),
-    }, { merge: true });
+    const expiresAt =
+      calculateExpiry(plan);
 
-    console.log('✅ Key generated:', key);
+    const studentRef =
+      adminDb
+        .collection('students')
+        .doc(studentEmail);
+
+    // =========================
+    // GENERATE UNIQUE KEY
+    // =========================
+
+    let key = '';
+
+    for (
+      let attempt = 0;
+      attempt < 5;
+      attempt++
+    ) {
+      const candidate =
+        generateLicenseKey();
+
+      const candidateDoc =
+        await adminDb
+          .collection('keys')
+          .doc(candidate)
+          .get();
+
+      if (!candidateDoc.exists) {
+        key = candidate;
+        break;
+      }
+    }
+
+    if (!key) {
+      throw new Error(
+        'KEY_GENERATION_FAILED'
+      );
+    }
+
+    // =========================
+    // SAVE NEW KEY
+    // =========================
+    //
+    // The key exists, but it is
+    // NOT the student's active
+    // licence until they enter it.
+    // =========================
+
+    await adminDb
+      .collection('keys')
+      .doc(key)
+      .set({
+        key,
+
+        mentorId:
+          mentor.mentorId,
+
+        mentorUid:
+          mentor.uid,
+
+        mentorEmail:
+          mentor.email,
+
+        studentEmail,
+
+        studentName,
+
+        plan,
+
+        used: false,
+
+        createdAt:
+          FieldValue.serverTimestamp(),
+
+        expiresAt:
+          expiresAt ?? null,
+      });
+
+    // =========================
+    // PENDING REPLACEMENT
+    // =========================
+    //
+    // IMPORTANT:
+    //
+    // Do NOT overwrite:
+    //   key
+    //   mentorId
+    //   mentorUid
+    //   plan
+    //
+    // Those represent the last
+    // successfully activated
+    // licence.
+    //
+    // paymentVerified is also
+    // deliberately untouched.
+    //
+    // The newly generated licence
+    // remains pending until the
+    // student enters Mentor ID +
+    // key at Student Entry.
+    // =========================
+
+    await studentRef.set(
+      {
+        email:
+          studentEmail,
+
+        name:
+          studentName,
+
+        pendingKey:
+          key,
+
+        pendingMentorId:
+          mentor.mentorId,
+
+        pendingMentorUid:
+          mentor.uid,
+
+        pendingPlan:
+          plan,
+
+        pendingLicenseExpiresAt:
+          expiresAt ?? null,
+
+        requiresReactivation:
+          true,
+
+        connected:
+          false,
+
+        updatedAt:
+          FieldValue.serverTimestamp(),
+      },
+      {
+        merge: true,
+      }
+    );
 
     return NextResponse.json({
       success: true,
+
       key,
-      mentorId,
+
+      mentorId:
+        mentor.mentorId,
+
+      plan,
+
+      expiresAt:
+        expiresAt
+          ? expiresAt
+              .toDate()
+              .toISOString()
+          : null,
     });
+
   } catch (error) {
-    console.error('Error:', error);
+    if (
+      error instanceof Error
+    ) {
+      if (
+        error.message ===
+        'UNAUTHORIZED'
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              'Authentication required',
+          },
+          {
+            status: 401,
+          }
+        );
+      }
+
+      if (
+        error.message ===
+        'MENTOR_NOT_FOUND'
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              'Mentor account not found',
+          },
+          {
+            status: 403,
+          }
+        );
+      }
+
+      if (
+        error.message ===
+        'MENTOR_ID_MISSING'
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              'Mentor ID is missing',
+          },
+          {
+            status: 403,
+          }
+        );
+      }
+
+      if (
+        error.message ===
+        'KEY_GENERATION_FAILED'
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              'Could not generate a unique license key',
+          },
+          {
+            status: 500,
+          }
+        );
+      }
+    }
+
+    console.error(
+      'Key generation error:',
+      error
+    );
+
     return NextResponse.json(
-      { error: 'Internal server error: ' + (error as Error).message },
-      { status: 500 }
+      {
+        error:
+          'Internal server error',
+      },
+      {
+        status: 500,
+      }
     );
   }
 }

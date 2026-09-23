@@ -1,18 +1,65 @@
-import { initializeApp, cert, getApps } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
-import { getAuth } from 'firebase-admin/auth';
+import 'server-only';
 
-// For now, use a simple config without service account
-// This works for development with environment variables
+import {
+  cert,
+  getApps,
+  initializeApp,
+} from 'firebase-admin/app';
 
-const apps = getApps();
+import {
+  getFirestore,
+} from 'firebase-admin/firestore';
 
-if (!apps.length) {
-  initializeApp({
-    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-    // We'll add service account later
-  });
+import {
+  getAuth,
+} from 'firebase-admin/auth';
+
+// ==========================================
+// FIREBASE ADMIN - SERVER ONLY
+// ==========================================
+//
+// NEVER import this file into a client
+// component.
+//
+// NEVER use NEXT_PUBLIC_* for Admin secrets.
+//
+// The credentials below come ONLY from
+// server environment variables.
+// ==========================================
+
+const projectId =
+  process.env.FIREBASE_ADMIN_PROJECT_ID;
+
+const clientEmail =
+  process.env.FIREBASE_ADMIN_CLIENT_EMAIL;
+
+const privateKey =
+  process.env.FIREBASE_ADMIN_PRIVATE_KEY
+    ?.replace(/\\n/g, '\n');
+
+if (
+  !projectId ||
+  !clientEmail ||
+  !privateKey
+) {
+  throw new Error(
+    'Firebase Admin credentials are missing'
+  );
 }
 
-export const adminDb = getFirestore();
-export const adminAuth = getAuth();
+const adminApp =
+  getApps().length > 0
+    ? getApps()[0]
+    : initializeApp({
+        credential: cert({
+          projectId,
+          clientEmail,
+          privateKey,
+        }),
+      });
+
+export const adminDb =
+  getFirestore(adminApp);
+
+export const adminAuth =
+  getAuth(adminApp);

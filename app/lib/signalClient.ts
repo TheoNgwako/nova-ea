@@ -1,4 +1,6 @@
-// NOVA EA - Signal Client (FIXED VERSION)
+import { auth } from './firebase';
+
+// PIXEL FORGE - Secure Signal Client
 
 const VPS_WS_URL = 'wss://signals.novamobiles.co.za';
 
@@ -18,16 +20,35 @@ export type SignalData = {
 };
 
 let ws: WebSocket | null = null;
+
 let listeners: ((signal: SignalData) => void)[] = [];
 let statusListeners: ((connected: boolean) => void)[] = [];
-let currentStudentId: string = '';
-let shouldReconnect: boolean = false;
-let reconnectTimer: NodeJS.Timeout | null = null;
 
-export function connectToSignalServer(studentId: string) {
-  // Prevent duplicate connections
-  if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
+let currentStudentId = '';
+let shouldReconnect = false;
+let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+
+export async function connectToSignalServer(studentId: string) {
+  if (
+    ws &&
+    (
+      ws.readyState === WebSocket.OPEN ||
+      ws.readyState === WebSocket.CONNECTING
+    )
+  ) {
     console.log('⚠️ Already connected or connecting');
+    return;
+  }
+
+  const user = auth.currentUser;
+
+  if (!user) {
+    console.warn('WebSocket connection blocked: user not signed in');
+    return;
+  }
+
+  if (user.uid !== studentId) {
+    console.warn('WebSocket connection blocked: student mismatch');
     return;
   }
 
@@ -35,51 +56,142 @@ export function connectToSignalServer(studentId: string) {
   shouldReconnect = true;
 
   try {
-    console.log('🔌 Connecting to VPS...', studentId);
-    ws = new WebSocket(`${VPS_WS_URL}?studentId=${encodeURIComponent(studentId)}`);
+    const idToken = await user.getIdToken();
+
+    if (!idToken) {
+      throw new Error('Could not obtain Firebase ID token');
+    }
+
+    console.log('🔌 Connecting securely to PIXEL FORGE VPS...');
+
+    /*
+     * Browser WebSockets cannot send a normal Authorization header.
+     * We send the Firebase ID token as a WebSocket subprotocol instead.
+     *
+     * The VPS must verify this token with Firebase Admin and derive
+     * the student UID from the verified token.
+     */
+    ws = new WebSocket(
+      VPS_WS_URL,
+      [
+        'pixel-forge-v1',
+        `firebase.${idToken}`
+      ]
+    );
 
     ws.onopen = () => {
-      console.log('🟢 Connected to NOVA EA signal server');
-      statusListeners.forEach(l => l(true));
+      console.log('🟢 Secure PIXEL FORGE WebSocket connected');
+
+      statusListeners.forEach(listener =>
+        listener(true)
+      );
     };
 
-    ws.onmessage = (event) => {
+    ws.onmessage = event => {
       try {
         const msg = JSON.parse(event.data);
-        if (msg.type === 'SIGNAL') {
-          console.log('🚨 SIGNAL:', msg.data);
-          listeners.forEach(l => l(msg.data));
+
+        if (msg.type !== 'SIGNAL') {
+          return;
         }
-      } catch (e) {}
+
+        const signal = msg.data;
+
+        if (
+          !signal ||
+          typeof signal !== 'object' ||
+          !signal.symbol ||
+          !signal.action ||
+          (
+            signal.action !== 'BUY' &&
+            signal.action !== 'SELL'
+          )
+        ) {
+          console.warn(
+            'Ignored invalid signal payload:',
+            msg
+          );
+
+          return;
+        }
+
+        console.log(
+          '🚨 SIGNAL:',
+          signal
+        );
+
+        listeners.forEach(listener =>
+          listener(signal as SignalData)
+        );
+      } catch (error) {
+        console.warn(
+          'Ignored invalid WebSocket message:',
+          error
+        );
+      }
     };
 
     ws.onclose = () => {
-      console.log('🔴 Disconnected');
-      statusListeners.forEach(l => l(false));
+      console.log('🔴 WebSocket disconnected');
+
+      statusListeners.forEach(listener =>
+        listener(false)
+      );
+
       ws = null;
 
-      // Only reconnect if we should
-      if (shouldReconnect && currentStudentId) {
-        if (reconnectTimer) clearTimeout(reconnectTimer);
+      if (
+        shouldReconnect &&
+        currentStudentId
+      ) {
+        if (reconnectTimer) {
+          clearTimeout(reconnectTimer);
+        }
+
         reconnectTimer = setTimeout(() => {
           if (shouldReconnect) {
-            console.log('🔄 Reconnecting...');
-            connectToSignalServer(currentStudentId);
+            console.log('🔄 Reconnecting securely...');
+
+            void connectToSignalServer(
+              currentStudentId
+            );
           }
         }, 5000);
       }
     };
 
     ws.onerror = () => {
-      // Silent error handling - close will fire
+      // onclose handles reconnect logic
     };
-  } catch (err) {
-    console.error('Connection error:', err);
+
+  } catch (error) {
+    console.error(
+      'Secure WebSocket connection error:',
+      error
+    );
+
+    if (
+      shouldReconnect &&
+      currentStudentId
+    ) {
+      if (reconnectTimer) {
+        clearTimeout(reconnectTimer);
+      }
+
+      reconnectTimer = setTimeout(() => {
+        if (shouldReconnect) {
+          void connectToSignalServer(
+            currentStudentId
+          );
+        }
+      }, 5000);
+    }
   }
 }
 
 export function disconnectFromSignalServer() {
-  console.log('🛑 Disconnecting (manual)');
+  console.log('🛑 Disconnecting WebSocket');
+
   shouldReconnect = false;
   currentStudentId = '';
 
@@ -92,18 +204,32 @@ export function disconnectFromSignalServer() {
     ws.close();
     ws = null;
   }
+
+  statusListeners.forEach(listener =>
+    listener(false)
+  );
 }
 
-export function onSignal(callback: (signal: SignalData) => void) {
+export function onSignal(
+  callback: (signal: SignalData) => void
+) {
   listeners.push(callback);
+
   return () => {
-    listeners = listeners.filter(l => l !== callback);
+    listeners = listeners.filter(
+      listener => listener !== callback
+    );
   };
 }
 
-export function onConnectionChange(callback: (connected: boolean) => void) {
+export function onConnectionChange(
+  callback: (connected: boolean) => void
+) {
   statusListeners.push(callback);
+
   return () => {
-    statusListeners = statusListeners.filter(l => l !== callback);
+    statusListeners = statusListeners.filter(
+      listener => listener !== callback
+    );
   };
 }

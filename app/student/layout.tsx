@@ -1,7 +1,16 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import {
+  useEffect,
+  useState,
+} from 'react';
+
+import {
+  onAuthStateChanged,
+  signOut,
+} from 'firebase/auth';
+
+import { auth } from '../lib/firebase';
 import { SignalProvider } from '../lib/SignalContext';
 
 export default function StudentLayout({
@@ -9,27 +18,81 @@ export default function StudentLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [allowed, setAllowed] = useState(false);
+  const [loading, setLoading] =
+    useState(true);
+
+  const [allowed, setAllowed] =
+    useState(false);
 
   useEffect(() => {
-    const isLoggedIn = localStorage.getItem('student_logged_in');
-    const studentDemo = localStorage.getItem('student_demo');
+    const unsubscribe =
+      onAuthStateChanged(
+        auth,
+        async user => {
+          if (!user) {
+            setAllowed(false);
+            setLoading(false);
 
-    if (isLoggedIn === 'true' && studentDemo) {
-      setAllowed(true);
-    } else {
-      window.location.href = '/student-entry';
-      return;
-    }
-    setLoading(false);
+            window.location.replace(
+              '/student-entry'
+            );
+
+            return;
+          }
+
+          try {
+            const tokenResult =
+              await user.getIdTokenResult(
+                true
+              );
+
+            if (
+              tokenResult.claims.role !==
+              'student'
+            ) {
+              await signOut(auth);
+
+              setAllowed(false);
+              setLoading(false);
+
+              window.location.replace(
+                '/student-entry'
+              );
+
+              return;
+            }
+
+            setAllowed(true);
+            setLoading(false);
+          } catch (error) {
+            console.error(
+              'Student layout authentication failed:',
+              error
+            );
+
+            try {
+              await signOut(auth);
+            } catch {
+              // Ignore sign-out failure.
+            }
+
+            setAllowed(false);
+            setLoading(false);
+
+            window.location.replace(
+              '/student-entry'
+            );
+          }
+        }
+      );
+
+    return () => unsubscribe();
   }, []);
 
   if (loading || !allowed) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="spinner-red"></div>
+        <div className="spinner-red" />
       </div>
     );
   }

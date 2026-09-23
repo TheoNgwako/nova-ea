@@ -106,6 +106,9 @@ export default function SettingsPanel({
   const [backgroundAnimation, setBackgroundAnimation] =
     useState<BackgroundAnimationType>('none');
 
+  const [tokenBalance, setTokenBalance] = useState<number | null>(null);
+const [tokenLoading, setTokenLoading] = useState(false);
+
   const toggleSection = (section: string) => {
     setOpenSection(openSection === section ? null : section);
   };
@@ -148,9 +151,61 @@ export default function SettingsPanel({
     }
   };
 
+const loadTokenBalance = async () => {
+  try {
+    setTokenLoading(true);
+
+    const user = auth.currentUser;
+
+    if (!user) {
+      setTokenBalance(null);
+      return;
+    }
+
+    const idToken = await user.getIdToken();
+
+    const response = await fetch(
+      '/api/tokens/balance',
+      {
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+        },
+        cache: 'no-store',
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.error ||
+          'Could not load token balance'
+      );
+    }
+
+    setTokenBalance(
+      typeof data.totalTokens === 'number'
+        ? data.totalTokens
+        : 0
+    );
+  } catch (error) {
+    console.error(
+      'Failed to load token balance:',
+      error
+    );
+
+    setTokenBalance(null);
+  } finally {
+    setTokenLoading(false);
+  }
+};
+
+
+
+
   useEffect(() => {
     if (!isOpen) return;
-
+  loadTokenBalance();
     try {
       const studentData = JSON.parse(
         localStorage.getItem('student_demo') || '{}'
@@ -1096,12 +1151,16 @@ export default function SettingsPanel({
                   TOKENS
                 </p>
 
-                <p
-                  className="font-bold text-lg"
-                  style={WHITE_TEXT}
-                >
-                  34 available
-                </p>
+<p
+  className="font-bold text-lg"
+  style={WHITE_TEXT}
+>
+  {tokenLoading
+    ? 'Loading...'
+    : tokenBalance !== null
+      ? `${tokenBalance} available`
+      : '-- available'}
+</p>
               </div>
             </div>
 

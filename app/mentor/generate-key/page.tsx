@@ -1,211 +1,509 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { onAuthStateChanged } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { auth, db } from '../../lib/firebase';
+import {
+  useState,
+  useEffect,
+} from 'react';
+
+import {
+  useRouter,
+} from 'next/navigation';
+
+import {
+  onAuthStateChanged,
+} from 'firebase/auth';
+
+import {
+  doc,
+  getDoc,
+  setDoc,
+} from 'firebase/firestore';
+
+import {
+  auth,
+  db,
+} from '../../lib/firebase';
+
 import MentorLayout from '../components/MentorLayout';
 
 export default function GenerateKey() {
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [generating, setGenerating] = useState(false);
-  const [studentEmail, setStudentEmail] = useState('');
-  const [studentName, setStudentName] = useState('');
-  const [plan, setPlan] = useState('lifetime');
-  const [message, setMessage] = useState('');
-  const [messageType, setMessageType] = useState<'success' | 'error' | ''>('');
-  const [mentorId, setMentorId] = useState('');
-  const [generatedKey, setGeneratedKey] = useState('');
+
+  const [loading, setLoading] =
+    useState(true);
+
+  const [generating, setGenerating] =
+    useState(false);
+
+  const [
+    studentEmail,
+    setStudentEmail,
+  ] = useState('');
+
+  const [
+    studentName,
+    setStudentName,
+  ] = useState('');
+
+  const [plan, setPlan] =
+    useState('lifetime');
+
+  const [message, setMessage] =
+    useState('');
+
+  const [
+    messageType,
+    setMessageType,
+  ] = useState<
+    'success' | 'error' | ''
+  >('');
+
+  const [mentorId, setMentorId] =
+    useState('');
+
+  const [
+    generatedKey,
+    setGeneratedKey,
+  ] = useState('');
+
+  // =========================
+  // LOAD AUTHENTICATED MENTOR
+  // =========================
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        router.push('/login');
+    const unsubscribe =
+      onAuthStateChanged(
+        auth,
+        async (user) => {
+          if (!user) {
+            router.push('/login');
+            return;
+          }
+
+          try {
+            const mentorRef = doc(
+              db,
+              'mentors',
+              user.uid
+            );
+
+            const mentorDoc =
+              await getDoc(
+                mentorRef
+              );
+
+            if (mentorDoc.exists()) {
+              const data =
+                mentorDoc.data();
+
+              setMentorId(
+                data.mentorId || ''
+              );
+            } else {
+              // Existing behaviour:
+              // create mentor profile
+              // if one does not exist.
+              //
+              // We will move this
+              // server-side later.
+
+              const newId = String(
+                Math.floor(
+                  100000 +
+                    Math.random() *
+                      900000
+                )
+              );
+
+              await setDoc(
+                mentorRef,
+                {
+                  mentorId:
+                    newId,
+
+                  email:
+                    user.email,
+
+                  name:
+                    user.displayName ||
+                    'Mentor',
+
+                  createdAt:
+                    new Date()
+                      .toISOString(),
+                }
+              );
+
+              setMentorId(
+                newId
+              );
+            }
+          } catch (error) {
+            console.error(
+              'Mentor load error:',
+              error
+            );
+
+            setMessage(
+              'Could not load mentor account.'
+            );
+
+            setMessageType(
+              'error'
+            );
+          } finally {
+            setLoading(false);
+          }
+        }
+      );
+
+    return () =>
+      unsubscribe();
+  }, [router]);
+
+  // =========================
+  // GENERATE KEY
+  // =========================
+
+  const handleGenerateKey =
+    async (
+      e: React.FormEvent
+    ) => {
+      e.preventDefault();
+
+      setGenerating(true);
+      setMessage('');
+      setMessageType('');
+      setGeneratedKey('');
+
+      const cleanStudentEmail =
+        studentEmail
+          .trim()
+          .toLowerCase();
+
+      if (!cleanStudentEmail) {
+        setMessage(
+          'Please enter student email'
+        );
+
+        setMessageType(
+          'error'
+        );
+
+        setGenerating(false);
+
         return;
       }
 
-      // Get or create mentor ID
-      const mentorDoc = await getDoc(doc(db, 'mentors', user.uid));
-      
-      if (mentorDoc.exists()) {
-        const data = mentorDoc.data();
-        setMentorId(data.mentorId || '');
-      } else {
-        const newId = String(Math.floor(100000 + Math.random() * 900000));
-        await setDoc(doc(db, 'mentors', user.uid), {
-          mentorId: newId,
-          email: user.email,
-          name: user.displayName || 'Mentor',
-          createdAt: new Date().toISOString(),
-        });
-        setMentorId(newId);
-      }
+      try {
+        const user =
+          auth.currentUser;
 
-      setLoading(false);
-    });
-    return () => unsubscribe();
-  }, [router]);
+        if (!user) {
+          throw new Error(
+            'Not authenticated'
+          );
+        }
 
-  const generateLicenseKey = (): string => {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let key = '';
-    for (let i = 0; i < 15; i++) {
-      key += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return key;
-  };
+        if (!mentorId) {
+          throw new Error(
+            'Mentor ID not loaded yet. Please wait.'
+          );
+        }
 
-  const handleGenerateKey = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setGenerating(true);
-    setMessage('');
-    setMessageType('');
-    setGeneratedKey('');
+        // =========================
+        // GET FIREBASE ID TOKEN
+        // =========================
 
-    if (!studentEmail) {
-      setMessage('Please enter student email');
-      setMessageType('error');
-      setGenerating(false);
-      return;
-    }
+        const token =
+          await user.getIdToken();
 
-    try {
-      const user = auth.currentUser;
-      if (!user) throw new Error('Not authenticated');
+        // =========================
+        // CALL SECURE API
+        // =========================
 
-      if (!mentorId) {
-        throw new Error('Mentor ID not loaded yet. Please wait.');
-      }
+        const res = await fetch(
+          '/api/keys/generate',
+          {
+            method: 'POST',
 
-      // Call API to generate key
-      const res = await fetch('/api/keys/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          mentorEmail: user.email,
-          studentEmail,
-          studentName,
-          plan,
-          mentorId: mentorId,
-        }),
-      });
+            headers: {
+              'Content-Type':
+                'application/json',
 
-      const data = await res.json();
+              Authorization:
+                `Bearer ${token}`,
+            },
 
-      if (data.success) {
-        setGeneratedKey(data.key);
-        setMessage('✅ Key generated successfully!');
-        setMessageType('success');
+            body:
+              JSON.stringify({
+                studentEmail:
+                  cleanStudentEmail,
+
+                studentName:
+                  studentName.trim(),
+
+                plan,
+              }),
+          }
+        );
+
+        const data =
+          await res.json();
+
+        if (!res.ok) {
+          throw new Error(
+            data.error ||
+              'Failed to generate key'
+          );
+        }
+
+        if (
+          !data.success ||
+          !data.key
+        ) {
+          throw new Error(
+            'Server did not return a license key'
+          );
+        }
+
+        setGeneratedKey(
+          data.key
+        );
+
+        setMessage(
+          '✅ Key generated successfully!'
+        );
+
+        setMessageType(
+          'success'
+        );
+
         setStudentEmail('');
         setStudentName('');
-      } else {
-        setMessage('❌ ' + (data.error || 'Failed to generate key'));
-        setMessageType('error');
+
+      } catch (error) {
+        console.error(
+          'Generate key error:',
+          error
+        );
+
+        setMessage(
+          '❌ ' +
+            (error instanceof Error
+              ? error.message
+              : 'Failed to generate key')
+        );
+
+        setMessageType(
+          'error'
+        );
+
+      } finally {
+        setGenerating(false);
       }
-    } catch (error) {
-      console.error('Error:', error);
-      setMessage('❌ Failed: ' + (error as Error).message);
-      setMessageType('error');
-    } finally {
-      setGenerating(false);
-    }
-  };
+    };
+
+  // =========================
+  // LOADING
+  // =========================
 
   if (loading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="spinner-red"></div>
+        <div className="spinner-red" />
       </div>
     );
   }
 
+  // =========================
+  // UI
+  // =========================
+
   return (
     <MentorLayout>
       <div className="p-6 max-w-2xl">
-        <h1 className="text-2xl font-bold text-white mb-2">Generate License</h1>
-        <p className="text-gray-400 text-sm mb-6">Create a new license key for a student</p>
 
-        {/* Mentor ID Display */}
+        <h1 className="text-2xl font-bold text-white mb-2">
+          Generate License
+        </h1>
+
+        <p className="text-gray-400 text-sm mb-6">
+          Create a new license key
+          for a student
+        </p>
+
+        {/* MENTOR ID */}
+
         <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 mb-6">
-          <p className="text-gray-400 text-sm">Your Mentor ID:</p>
-          <p className="text-white font-bold text-2xl tracking-wider">{mentorId || 'Loading...'}</p>
-          <p className="text-gray-500 text-xs mt-1">Share this ID with your students</p>
+
+          <p className="text-gray-400 text-sm">
+            Your Mentor ID:
+          </p>
+
+          <p className="text-white font-bold text-2xl tracking-wider">
+            {mentorId ||
+              'Loading...'}
+          </p>
+
+          <p className="text-gray-500 text-xs mt-1">
+            Share this ID with
+            your students
+          </p>
+
         </div>
 
+        {/* MESSAGE */}
+
         {message && (
-          <div className={`p-4 rounded-xl mb-4 ${
-            messageType === 'success'
-              ? 'bg-green-500/10 border border-green-500/30 text-green-400'
-              : 'bg-red-500/10 border border-red-500/30 text-red-400'
-          }`}>
+          <div
+            className={`p-4 rounded-xl mb-4 ${
+              messageType ===
+              'success'
+                ? 'bg-green-500/10 border border-green-500/30 text-green-400'
+                : 'bg-red-500/10 border border-red-500/30 text-red-400'
+            }`}
+          >
             {message}
           </div>
         )}
 
+        {/* GENERATED KEY */}
+
         {generatedKey && (
           <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-4 mb-4">
-            <p className="text-green-400 text-sm">License Key:</p>
-            <p className="text-white font-bold text-xl tracking-wider">{generatedKey}</p>
-            <p className="text-gray-500 text-xs mt-2">Share this key with your student</p>
+
+            <p className="text-green-400 text-sm">
+              License Key:
+            </p>
+
+            <p className="text-white font-bold text-xl tracking-wider break-all">
+              {generatedKey}
+            </p>
+
+            <p className="text-gray-500 text-xs mt-2">
+              Share this key with
+              your student
+            </p>
+
           </div>
         )}
 
-        <form onSubmit={handleGenerateKey} className="space-y-4">
+        <form
+          onSubmit={
+            handleGenerateKey
+          }
+          className="space-y-4"
+        >
+
+          {/* STUDENT EMAIL */}
+
           <div>
-            <label className="text-gray-400 text-sm block mb-2">Student Email</label>
+            <label className="text-gray-400 text-sm block mb-2">
+              Student Email
+            </label>
+
             <input
               type="email"
-              value={studentEmail}
-              onChange={(e) => setStudentEmail(e.target.value)}
+              value={
+                studentEmail
+              }
+              onChange={(e) =>
+                setStudentEmail(
+                  e.target.value
+                )
+              }
               placeholder="student@email.com"
               required
               className="w-full px-4 py-3 bg-black/50 border border-red-500/20 rounded-lg text-white placeholder-gray-600 focus:border-red-500 focus:outline-none transition"
             />
           </div>
 
+          {/* STUDENT NAME */}
+
           <div>
-            <label className="text-gray-400 text-sm block mb-2">Student Name (optional)</label>
+            <label className="text-gray-400 text-sm block mb-2">
+              Student Name
+              (optional)
+            </label>
+
             <input
               type="text"
-              value={studentName}
-              onChange={(e) => setStudentName(e.target.value)}
+              value={
+                studentName
+              }
+              onChange={(e) =>
+                setStudentName(
+                  e.target.value
+                )
+              }
               placeholder="Student name"
               className="w-full px-4 py-3 bg-black/50 border border-red-500/20 rounded-lg text-white placeholder-gray-600 focus:border-red-500 focus:outline-none transition"
             />
           </div>
 
+          {/* PLAN */}
+
           <div>
-            <label className="text-gray-400 text-sm block mb-2">Plan Duration</label>
+            <label className="text-gray-400 text-sm block mb-2">
+              Plan Duration
+            </label>
+
             <div className="grid grid-cols-3 md:grid-cols-5 gap-2">
-              {['lifetime', '1year', '6months', '1month', '1week'].map((p) => (
+
+              {[
+                'lifetime',
+                '1year',
+                '6months',
+                '1month',
+                '1week',
+              ].map((p) => (
                 <button
                   key={p}
                   type="button"
-                  onClick={() => setPlan(p)}
+                  onClick={() =>
+                    setPlan(p)
+                  }
                   className={`px-3 py-2 rounded-lg text-sm transition ${
                     plan === p
                       ? 'bg-red-600 text-white'
                       : 'border border-red-500/20 text-gray-400 hover:border-red-500 hover:text-red-400'
                   }`}
                 >
-                  {p === 'lifetime' ? 'Lifetime' :
-                   p === '1year' ? '1 Year' :
-                   p === '6months' ? '6 Months' :
-                   p === '1month' ? '1 Month' : '1 Week'}
+                  {p ===
+                  'lifetime'
+                    ? 'Lifetime'
+                    : p ===
+                      '1year'
+                    ? '1 Year'
+                    : p ===
+                      '6months'
+                    ? '6 Months'
+                    : p ===
+                      '1month'
+                    ? '1 Month'
+                    : '1 Week'}
                 </button>
               ))}
+
             </div>
           </div>
 
+          {/* GENERATE */}
+
           <button
             type="submit"
-            disabled={generating}
+            disabled={
+              generating ||
+              !mentorId
+            }
             className="w-full py-4 bg-red-600 rounded-xl text-white font-bold text-lg hover:bg-red-700 transition disabled:opacity-50"
           >
-            {generating ? 'Generating...' : 'Generate Key'}
+            {generating
+              ? 'Generating...'
+              : 'Generate Key'}
           </button>
+
         </form>
       </div>
     </MentorLayout>
