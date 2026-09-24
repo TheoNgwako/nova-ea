@@ -17,14 +17,10 @@ import {
   signOut,
 } from 'firebase/auth';
 
-import {
-  doc,
-  getDoc,
-} from 'firebase/firestore';
+
 
 import {
   auth,
-  db,
 } from '../lib/firebase';
 
 export default function Login() {
@@ -50,23 +46,60 @@ export default function Login() {
   // =========================
   // VERIFY MENTOR
   // =========================
+const isMentor =
+  async (uid: string) => {
+    const user =
+      auth.currentUser;
 
-  const isMentor =
-    async (uid: string) => {
-      const mentorRef =
-        doc(
-          db,
-          'mentors',
-          uid
-        );
+    if (
+      !user ||
+      user.uid !== uid
+    ) {
+      return false;
+    }
 
-      const mentorDoc =
-        await getDoc(
-          mentorRef
-        );
+    const idToken =
+      await user.getIdToken();
 
-      return mentorDoc.exists();
-    };
+    const response =
+      await fetch(
+        '/api/mentors/verify',
+        {
+          method: 'POST',
+          headers: {
+            Authorization:
+              `Bearer ${idToken}`,
+          },
+          cache: 'no-store',
+        }
+      );
+
+    const data =
+      await response
+        .json()
+        .catch(() => ({}));
+
+    if (!response.ok) {
+      if (response.status === 403) {
+        return false;
+      }
+
+      throw new Error(
+        data.code ||
+          'MENTOR_VERIFY_FAILED'
+      );
+    }
+
+    if (data.success !== true) {
+      return false;
+    }
+
+    // Refresh Firebase token so
+    // role: mentor becomes active.
+    await user.getIdToken(true);
+
+    return true;
+  };
 
   // =========================
   // EXISTING SESSION
